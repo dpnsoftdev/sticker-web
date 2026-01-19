@@ -1,0 +1,37 @@
+{
+  "id": "camp_9a2f3c1e",
+  "name": "Pre-order Campaign Tết 2025", // required
+  "slug": "preorder-campaign-tet-2025", // required, unique
+  "description": "Chiến dịch pre-order đặc biệt cho Tết 2025 với nhiều ưu đãi", // optional
+  "type": "preorder", // required, enum: preorder | flash_sale | promotion
+  "status": "active", // required, default draft, enum: active | ended | cancelled
+  "start_date": "2025-01-01T00:00:00Z", // required
+  "end_date": "2025-02-15T23:59:59Z", // required
+  "created_by": "usr_9a2f3c1e", // required, user_id who created the campaign
+  "created_at": "2024-12-20T10:00:00Z", // required, auto generated
+  "updated_at": "2025-01-15T10:00:00Z", // required, auto generated
+  "banner_image": "https://cdn.example.com/campaigns/camp_9a2f3c1e/banner.jpg", // default
+  "thumbnail_image": "https://cdn.example.com/campaigns/camp_9a2f3c1e/thumb.jpg", // optional, default null
+  "items": [
+    {
+      "product_id": "c2a1f2d8-3f2e-4d51-a2d4-6e1d0c9f1111",
+      "variant_id": null,
+      "campaign_price": 157000, // required, default is product price
+      "campaign_stock": 50, // required, default is product stock
+      "campaign_image": "https://cdn.example.com/campaigns/camp_9a2f3c1e/item.jpg" // required, default is product first image
+    }
+  ],
+  "settings": {
+    "allow_over_stock": true, // optional, default false, allow pre-order beyond stock limit
+    "max_quantity_per_order": 10, // optional, default null, max items per order
+    "require_deposit": true, // optional, default false, require deposit for pre-order
+    "deposit_percentage": 50, // optional, default 50, if require_deposit is true
+    "estimated_delivery_date": "2025-03-01T00:00:00Z", // optional, estimated delivery date
+    "delivery_note": "Dự kiến giao hàng trong tháng 3/2025" // optional, delivery note for customers
+  }, // optional, default {}
+  "metadata": {
+    "total_orders": 150, // optional, tracking total orders in campaign
+    "total_revenue": 23500000, // optional, tracking total revenue
+    "view_count": 500 // optional, tracking campaign views
+  } // optional, default {}
+}
