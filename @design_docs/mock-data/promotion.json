@@ -1,0 +1,40 @@
+{
+  "id": "promo_9a2f3c1e",
+  "code": "TET2025", // required, unique, promotion code/coupon code
+  "name": "Giảm giá Tết 2025", // required
+  "description": "Giảm 10% cho đơn hàng từ 200k", // optional
+  "type": "discount_code", // required, enum: discount_code| buy_x_get_y | free_shipping
+  "status": "active", // required, default draft, enum: active | inactive
+  "start_date": "2025-01-01T00:00:00Z", // required
+  "end_date": "2025-02-15T23:59:59Z", // required
+  "created_by": "usr_9a2f3c1e", // required, user_id who created the promotion
+  "created_at": "2024-12-20T10:00:00Z", // required, auto generated
+  "updated_at": "2025-01-15T10:00:00Z", // required, auto generated
+  "discount": {
+    "type": "percentage", // required, enum: percentage | fixed_amount | free_shipping
+    "value": 10, // required, discount value (10% or 10000 VND or 0 if free_shipping)
+    "max_discount_amount": 50000, // optional, default null, maximum discount amount in VND
+    "min_order_amount": 200000 // optional, default null, minimum order amount to apply discount
+  }, // required
+  "usage_limits": {
+    "total_uses": 1000, // optional, default null, total number of times promotion can be used
+    "used_count": 150, // required, default 0, current number of times used
+    "per_user_limit": 1, // optional, default null, max uses per user
+    "per_user_period": "lifetime" // optional, default lifetime, enum: lifetime | daily | weekly | monthly
+  }, // required
+  "applicable_to": {
+		"all_products": true, // required, default true, apply to all products
+    "products": [
+      "9c8f3c6a-2d41-4c9e-9f65-1c8e1b6a0a01",
+      "c2a1f2d8-3f2e-4d51-a2d4-6e1d0c9f1111"
+    ], // optional, default [], array of product_ids, if all_products is true => products is ignored, set to []
+    "variants": [
+      "var-101"
+    ], // optional, default [], array of variant_ids, if all_variants is true => variants is ignored, set to []
+  }, // required
+  "metadata": {
+    "total_discount_given": 5000000, // optional, total discount amount given
+    "total_orders": 150, // optional, total orders using this promotion
+    "view_count": 500 // optional, tracking promotion views
+  } // optional, default {}
+}

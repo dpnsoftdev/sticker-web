@@ -1,0 +1,32 @@
+{
+  "id": "ord_9a2f3c1e",
+  "status": "pending_confirmation", // required, enum: pending_confirmation | payment_confirmed | preparing_shipment | shipped | delivered | cancelled
+  "created_at": "2025-12-24T10:00:00Z", // required, auto generated
+  "contact": {
+    "social_link": "https://facebook.com/...", // required
+    "email": "email@example.com", // required
+    "phone": "090..." // required
+  },
+	"shipping_info": {
+		"receiver_name": "Nguyễn Văn A", // required
+		"phone": "090...", // required
+		"address": "Số nhà, đường, phường, quận, thành phố", // required
+		"note": "Giao ngoài giờ hành chính, gọi trước khi giao..." // optional
+	},
+  "payment": {
+    "plan_type": "full", // required, enum: full | deposit
+    "method": "bank_transfer", // required, enum: bank_transfer | momo | zalopay
+    "bill_image": "https://cdn.example.com/orders/ord_9a2f3c1e/bill.jpg" // required
+  },
+  "promotion": {
+    "promotion_id": "promo_9a2f3c1e", // optional, default null, promotion applied
+    "code": "TET2025", // optional, default null, promotion code used
+    "discount_amount": 15000, // optional, default 0, discount amount applied in VND
+    "discount_type": "percentage" // optional, default null, type of discount applied
+  }, // optional, default null
+  "itemIds": [{
+    "product_id": "prd_anton_bowl_cut", // required
+    "variant_id": "var_badge_round_44", // optional, default null
+    "quantity": 1 // required
+  }] // required
+}

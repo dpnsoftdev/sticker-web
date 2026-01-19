@@ -1,0 +1,15 @@
+{
+  "id": "usr_9a2f3c1e",
+  "email": "user@example.com", // required, unique
+  "password_hash": "$2b$10$...", // required, bcrypt hash
+  "name": "Nguyễn Văn A", // required
+  "phone": "0901234567", // optional
+  "avatar": "https://cdn.example.com/avatars/usr_9a2f3c1e.jpg", // optional, default null
+  "role": "CUSTOMER", // required, default CUSTOMER, enum: OWNER | CUSTOMER
+  "status": "active", // required, default active, enum: active | inactive | suspended
+  "email_verified": false, // required, default false
+  "phone_verified": false, // required, default false
+  "created_at": "2025-01-15T10:00:00Z", // required, auto generated
+  "updated_at": "2025-01-15T10:00:00Z", // required, auto generated
+  "last_login_at": "2025-01-20T14:30:00Z", // optional, default null
+}
