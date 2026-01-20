@@ -5,7 +5,7 @@
   "name": "Nguyễn Văn A", // required
   "phone": "0901234567", // optional
   "avatar": "https://cdn.example.com/avatars/usr_9a2f3c1e.jpg", // optional, default null
-  "role": "CUSTOMER", // required, default CUSTOMER, enum: OWNER | CUSTOMER
+  "role": "customer", // required, default custerm, enum: owner | customer
   "status": "active", // required, default active, enum: active | inactive | suspended
   "email_verified": false, // required, default false
   "phone_verified": false, // required, default false
