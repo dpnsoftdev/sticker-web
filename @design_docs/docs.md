@@ -16,14 +16,14 @@ An **order / pre-order** store application focused on handmade / collectible pro
 
 ## 2. Roles
 
-### 2.1 Customer (CUSTOMER)
+### 2.1 Customer (customer)
 
 - Browse products, select variants, place orders, track orders
 - Apply promotion codes during checkout
 - View active campaigns
 - Upload payment receipts
 
-### 2.2 Store Owner (OWNER)
+### 2.2 Store Owner (owner)
 
 - Manage users
 - Manage products / variants / pre-orders
@@ -131,7 +131,7 @@ An **order / pre-order** store application focused on handmade / collectible pro
 - View user list
 - CRUD users:
   - email, password, name, phone, avatar
-  - role (`OWNER | CUSTOMER`)
+  - role (`owner | customer`)
   - status (`active | inactive | suspended`)
   - `email_verified`, `phone_verified`
 - Filter by role and status
