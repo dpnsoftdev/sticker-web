@@ -4,25 +4,25 @@
 :root {
   /* Core surfaces */
   --background: 48 100% 97%; /* #FFFCF0 */
-  --foreground: 4 14% 54%;   /* #9A7B79 */
+  --foreground: 4 14% 54%; /* #9A7B79 */
 
-  --card: 40 43% 97%;        /* #FBF9F5 */
+  --card: 40 43% 97%; /* #FBF9F5 */
   --card-foreground: 4 14% 20%;
 
   --popover: 40 43% 97%;
   --popover-foreground: 4 14% 20%;
 
   /* Brand */
-  --primary: 340 75% 75%;          /* #FAB8CE */
+  --primary: 340 75% 75%; /* #FAB8CE */
   --primary-light: 340 87% 90%;
   --primary-bold: 340 87% 75%;
   --primary-foreground: 0 0% 100%;
 
   /* Secondary / Accent */
-  --secondary: 25 70% 95%;         /* #FBF0E8 */
+  --secondary: 25 70% 95%; /* #FBF0E8 */
   --secondary-foreground: 4 14% 25%;
 
-  --muted: 351 83% 95%;            /* #FDE9EC */
+  --muted: 351 83% 95%; /* #FDE9EC */
   --muted-foreground: 4 10% 45%;
 
   --accent: 351 83% 95%;
@@ -32,7 +32,7 @@
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
 
-  --border: 22 32% 88%;            /* #EBDFD8 */
+  --border: 22 32% 88%; /* #EBDFD8 */
   --input: 22 32% 88%;
   --ring: 340 87% 85%;
 
@@ -40,7 +40,7 @@
 
   /* UI Light theme */
   --nav-text: var(--foreground);
-  --nav-hover: var(--primary-bold);  
+  --nav-hover: var(--primary-bold);
 
   /* Font sizes */
   --font-size-xs: 12px;
@@ -149,5 +149,20 @@ body {
     outline: none;
     box-shadow: 0 0 0 2px hsl(var(--ring));
     border-radius: 8px;
+  }
+}
+
+@layer utilities {
+  @keyframes marquee {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  .animate-marquee {
+    animation: marquee 24s linear infinite;
   }
 }
