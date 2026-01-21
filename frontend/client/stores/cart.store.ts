@@ -2,16 +2,16 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
 export interface CartItem {
-  product_id: string;
-  variant_id?: string;
+  productId: string;
+  variantId?: string;
   quantity: number;
   // Display data (not persisted, loaded from product)
-  product_name?: string;
-  variant_name?: string;
+  productName?: string;
+  variantName?: string;
   sku?: string;
   price?: number;
   image?: string;
-  campaign_price?: number;
+  campaignPrice?: number;
 }
 
 interface CartStore {
@@ -31,7 +31,7 @@ export const useCartStore = create<CartStore>()(
       addItem: (item) => {
         set((state) => {
           const existingIndex = state.items.findIndex(
-            (i) => i.product_id === item.product_id && i.variant_id === item.variant_id
+            (i) => i.productId === item.productId && i.variantId === item.variantId
           );
           if (existingIndex >= 0) {
             const updated = [...state.items];
@@ -47,7 +47,7 @@ export const useCartStore = create<CartStore>()(
       removeItem: (productId, variantId) => {
         set((state) => ({
           items: state.items.filter(
-            (item) => !(item.product_id === productId && item.variant_id === variantId)
+            (item) => !(item.productId === productId && item.variantId === variantId)
           ),
         }));
       },
@@ -58,7 +58,7 @@ export const useCartStore = create<CartStore>()(
         }
         set((state) => ({
           items: state.items.map((item) =>
-            item.product_id === productId && item.variant_id === variantId
+            item.productId === productId && item.variantId === variantId
               ? { ...item, quantity }
               : item
           ),
@@ -67,7 +67,7 @@ export const useCartStore = create<CartStore>()(
       clearCart: () => set({ items: [] }),
       getSubtotal: () => {
         return get().items.reduce((sum, item) => {
-          const price = item.campaign_price ?? item.price ?? 0;
+          const price = item.campaignPrice ?? item.price ?? 0;
           return sum + price * item.quantity;
         }, 0);
       },
