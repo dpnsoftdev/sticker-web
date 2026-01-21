@@ -1,5 +1,6 @@
-// Application constants
+import { NavItem } from "@/types/layout";
 
+// Application constants
 export const APP_NAME = "Sticker Store";
 
 // Database roles (stored in database)
@@ -44,3 +45,12 @@ export const PAYMENT_METHOD = {
   MOMO: "momo",
   ZALOPAY: "zalopay",
 } as const;
+
+
+export const NAV_ITEMS: NavItem[] = [
+  { label: "Sản phẩm", href: "/products" },
+  { label: "Đăng bán", href: "/campaigns" }, // đổi lại nếu bạn có route riêng
+  { label: "Chính sách", href: "/policy" },  // đổi lại nếu bạn có route riêng
+  { label: "Thông tin", href: "/about" },    // đổi lại nếu bạn có route riêng
+  { label: "Tra đơn", href: "/order/track" },
+];

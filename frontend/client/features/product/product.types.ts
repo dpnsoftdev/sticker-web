@@ -15,4 +15,8 @@ export interface ProductListResponse {
   limit: number;
 }
 
+export interface CategoryListResponse extends Category {
+  products: Product[];
+}
+
 export type { Product, Variant, Category };

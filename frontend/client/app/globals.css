@@ -1,26 +1,153 @@
 @import "tailwindcss";
 
+/* Design tokens (shadcn-style) */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Core surfaces */
+  --background: 48 100% 97%; /* #FFFCF0 */
+  --foreground: 4 14% 54%;   /* #9A7B79 */
+
+  --card: 40 43% 97%;        /* #FBF9F5 */
+  --card-foreground: 4 14% 20%;
+
+  --popover: 40 43% 97%;
+  --popover-foreground: 4 14% 20%;
+
+  /* Brand */
+  --primary: 340 75% 75%;          /* #FAB8CE */
+  --primary-light: 340 87% 90%;
+  --primary-bold: 340 87% 75%;
+  --primary-foreground: 0 0% 100%;
+
+  /* Secondary / Accent */
+  --secondary: 25 70% 95%;         /* #FBF0E8 */
+  --secondary-foreground: 4 14% 25%;
+
+  --muted: 351 83% 95%;            /* #FDE9EC */
+  --muted-foreground: 4 10% 45%;
+
+  --accent: 351 83% 95%;
+  --accent-foreground: 4 14% 25%;
+
+  /* System */
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 22 32% 88%;            /* #EBDFD8 */
+  --input: 22 32% 88%;
+  --ring: 340 87% 85%;
+
+  --radius: 16px;
+
+  /* UI Light theme */
+  --nav-text: var(--foreground);
+  --nav-hover: var(--primary-bold);  
+
+  /* Font sizes */
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-base: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 20px;
+  --font-size-2xl: 24px;
+  --font-size-3xl: 30px;
+  --font-size-4xl: 36px;
+  --font-size-5xl: 48px;
 }
 
+/* Dark theme: use class .dark */
+.dark {
+  --background: 240 10% 8%;
+  --foreground: 0 0% 96%;
+
+  --card: 240 10% 10%;
+  --card-foreground: 0 0% 96%;
+
+  --popover: 240 10% 10%;
+  --popover-foreground: 0 0% 96%;
+
+  --primary: 340 87% 75%;
+  --primary-foreground: 240 10% 10%;
+
+  --secondary: 240 6% 16%;
+  --secondary-foreground: 0 0% 96%;
+
+  --muted: 240 6% 16%;
+  --muted-foreground: 240 5% 70%;
+
+  --accent: 240 6% 16%;
+  --accent-foreground: 0 0% 96%;
+
+  --destructive: 0 72% 56%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 240 6% 18%;
+  --input: 240 6% 18%;
+  --ring: 340 87% 75%;
+
+  /* UI Dark theme */
+  --nav-text: 0 0% 96%;
+  --nav-hover: var(--primary);
+}
+
+/* Tailwind v4 theme tokens bridge */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --radius: var(--radius);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-baloo: var(--font-baloo);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Base */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: var(--font-baloo), Arial, Helvetica, sans-serif;
+}
+
+@layer components {
+  .nav-link {
+    color: hsl(var(--nav-text));
+    transition: color 180ms ease;
+    font-weight: 500;
+    font-size: var(--font-size-sm);
+  }
+
+  .nav-link:hover {
+    color: hsl(var(--nav-hover));
+  }
+
+  .nav-link:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px hsl(var(--ring));
+    border-radius: 8px;
+  }
 }
