@@ -49,8 +49,8 @@ export const PAYMENT_METHOD = {
 
 export const NAV_ITEMS: NavItem[] = [
   { label: "Sản phẩm", href: "/products" },
-  { label: "Đăng bán", href: "/campaigns" }, // đổi lại nếu bạn có route riêng
-  { label: "Chính sách", href: "/policy" },  // đổi lại nếu bạn có route riêng
-  { label: "Thông tin", href: "/about" },    // đổi lại nếu bạn có route riêng
+  { label: "Đăng bán", href: "/campaigns" }, 
+  { label: "Chính sách", href: "/policy" },  
+  { label: "Thông tin", href: "/contact" },   
   { label: "Tra đơn", href: "/order/track" },
 ];

@@ -133,12 +133,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { product } = await getProductBySlug(params.slug);
 
-  const title = `${product.name} – Purin Order`;
+  const title = `${product.name} – Dango Corner`;
   const description =
     product.shipping_note ||
     product.preorder_description ||
     product.size_description ||
-    "Chi tiết sản phẩm tại Purin Order.";
+    "Chi tiết sản phẩm tại Dango Corner.";
 
   return {
     title,
