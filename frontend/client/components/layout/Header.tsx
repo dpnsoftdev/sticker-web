@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 
-import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 import { NAV_ITEMS, ROLES } from "@/lib/constants";
 
@@ -31,6 +30,8 @@ import {
 import { Menu, ShoppingBag, Moon, Sun, User, UserCircle2 } from "lucide-react";
 import { SessionUser } from "@/types/user";
 import { HeaderNotification } from "./HeaderNotification";
+import { CartDrawer } from "@/components/common/CartDrawer";
+import { useCartStore } from "@/stores/cart.store";
 
 /**
  * Toggle dark mode đơn giản (không phụ thuộc next-themes).
@@ -94,18 +95,23 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
-function CartButton({ itemCount }: { itemCount: number }) {
+export function CartButton() {
+  const itemCount = useCartStore(state => state.getItemCount());
+
   return (
-    <Link href="/cart" className="relative">
-      <Button variant="outline" size="icon" className="rounded-xl">
-        <ShoppingBag className="h-5 w-5" />
-      </Button>
-      {itemCount > 0 && (
-        <span className="absolute -right-2 -top-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-xs font-semibold text-white">
-          {itemCount}
-        </span>
-      )}
-    </Link>
+    <CartDrawer
+      onCheckout={() => {}}
+      trigger={
+        <Button variant="ghost" size="icon" className="rounded-full relative">
+          <ShoppingBag className="h-5 w-5" />
+          {itemCount > 0 && (
+            <span className="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-xs font-semibold text-primary-foreground">
+              {itemCount}
+            </span>
+          )}
+        </Button>
+      }
+    />
   );
 }
 
@@ -190,7 +196,6 @@ function AuthMenu({
 }
 
 export function Header() {
-  const { itemCount } = useCart();
   const { user, isAuthenticated } = useAuth();
 
   return (
@@ -283,7 +288,7 @@ export function Header() {
           {/* Right actions */}
           <div className="ml-auto flex items-center gap-2">
             <ThemeToggle />
-            <CartButton itemCount={itemCount} />
+            <CartButton />
             <AuthMenu isAuthenticated={isAuthenticated} user={user} />
           </div>
         </div>

@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
-import type { Product, Variant } from "@/types/product"; // chỉnh path đúng project bạn
-import VariantSelector from "@/components/common/variant-selector";
-import AddToCartBar from "@/components/common/add-to-cart-bar";
+import type { Product, Variant } from "@/types/product";
+import ProductCartControls from "@/components/common/ProductCartControls";
 
 // ✅ mock fetch (thay bằng product.api.ts của bạn sau)
 async function getProductBySlug(slug: string): Promise<{
@@ -309,16 +308,12 @@ export default async function ProductDetailPage({
               </dl>
             </div>
 
-            {/* Variant selector (CLIENT) */}
-            <div className="rounded-2xl border border-border bg-card p-5">
-              <h2 className="text-sm font-semibold text-foreground mb-3">
-                Phân loại
-              </h2>
-              <VariantSelector variants={variants} basePrice={product.price} />
-            </div>
-
-            {/* Add to cart (CLIENT) */}
-            <AddToCartBar product={product} variants={variants} />
+            {/* Variant selector & Add to cart (CLIENT) */}
+            <ProductCartControls
+              product={product}
+              variants={variants}
+              basePrice={product.price}
+            />
           </section>
         </div>
 

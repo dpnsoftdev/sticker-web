@@ -17,34 +17,29 @@ function formatVND(amount: number) {
 export default function VariantSelector({
   variants,
   basePrice,
-  defaultVariantId,
   onChange,
 }: {
   variants: Variant[];
   basePrice: number;
-  defaultVariantId?: string;
   onChange?: (variant: Variant | null) => void;
 }) {
-  const initialId = defaultVariantId ?? variants[0]?.id ?? "";
-  const [selectedId, setSelectedId] = React.useState(initialId);
+  const [selectedId, setSelectedId] = React.useState<string | null>(
+    variants[0]?.id ?? null
+  );
 
   const selected = React.useMemo(
     () => variants.find(v => v.id === selectedId) ?? null,
     [selectedId, variants]
   );
 
+  const prevSelectedRef = React.useRef<Variant | null>(null);
   React.useEffect(() => {
-    onChange?.(selected);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedId]);
-
-  const displayPrice = React.useMemo(() => {
-    if (!selected) return basePrice;
-    // price trong Variant nếu bạn dùng kiểu "delta" (như mock ở trên)
-    // Nếu bạn dùng price absolute thì đổi logic tại đây.
-    const delta = selected.price ?? 0;
-    return basePrice + delta;
-  }, [basePrice, selected]);
+    // Only call onChange if the variant actually changed
+    if (selected?.id !== prevSelectedRef.current?.id) {
+      onChange?.(selected);
+      prevSelectedRef.current = selected;
+    }
+  }, [selected, onChange]);
 
   if (!variants.length) {
     return (
@@ -57,8 +52,10 @@ export default function VariantSelector({
   return (
     <div className="space-y-3">
       <Select
-        value={selectedId}
-        onValueChange={(val: string) => setSelectedId(val)}
+        value={selectedId ?? ""}
+        onValueChange={(val: string) => {
+          setSelectedId(val);
+        }}
       >
         <SelectTrigger className="rounded-xl">
           <SelectValue placeholder="Chọn phân loại" />
@@ -66,18 +63,9 @@ export default function VariantSelector({
 
         <SelectContent>
           {variants.map(v => {
-            const delta = v.price ?? 0;
-            const priceLabel =
-              delta === 0
-                ? ""
-                : delta > 0
-                  ? ` (+${formatVND(delta)})`
-                  : ` (${formatVND(delta)})`;
-
             return (
               <SelectItem key={v.id} value={v.id}>
                 {v.name}
-                {priceLabel}
               </SelectItem>
             );
           })}
@@ -90,7 +78,7 @@ export default function VariantSelector({
         </p>
 
         <p className="text-sm font-semibold text-primary">
-          {formatVND(displayPrice)}
+          {formatVND(basePrice + (selected?.price ?? 0))}
         </p>
       </div>
     </div>
