@@ -1,5 +1,4 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// prisma/schema.prisma
 
 generator client {
   provider = "prisma-client-js"
@@ -10,14 +9,305 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+/* =========================
+   Enums
+========================= */
+
+enum UserRole {
+  owner
+  customer
+}
+
+enum UserStatus {
+  active
+  inactive
+  suspended
+}
+
+enum ProductType {
+  in_stock
+  preorder
+}
+
+enum CampaignType {
+  preorder
+  flash_sale
+  promotion
+}
+
+enum CampaignStatus {
+  draft
+  active
+  ended
+  cancelled
+}
+
+enum PromotionStatus {
+  active
+  inactive
+}
+
+enum OrderStatus {
+  pending_confirmation
+  payment_confirmed
+  preparing_shipment
+  shipped
+  delivered
+  cancelled
+}
+
+/* =========================
+   Users
+========================= */
+
 model User {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  age       Int
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id             String     @id @default(uuid())
+  email          String     @unique
+  passwordHash   String     @map("password_hash")
+  name           String
+  phone          String?
+  avatar         String?
+  role           UserRole   @default(customer)
+  status         UserStatus @default(active)
+
+  emailVerified  Boolean    @default(false) @map("email_verified")
+  phoneVerified  Boolean    @default(false) @map("phone_verified")
+
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @updatedAt @map("updated_at")
+  lastLoginAt    DateTime?  @map("last_login_at")
+
+  /* relational */ 
+  campaigns      Campaign[]
+  promotions     Promotion[]
 
   @@map("users")
-  @@index([email])
+}
+
+/* =========================
+   Products
+========================= */
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String
+  slug        String    @unique
+  description String?
+  image       String[]  @default([])
+
+  products    Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id                  String      @id @default(uuid())
+  sku                 String      @unique
+  name                String
+  slug                String      @unique
+
+  categoryId          String      @map("category_id")
+  category            Category    @relation(fields: [categoryId], references: [id])
+
+  productType         ProductType @default(in_stock) @map("product_type")
+
+  price               Int
+  currency            String      @default("VND")
+  priceNote           String?     @map("price_note")
+  shippingNote        String?     @map("shipping_note")
+
+  stock               Int         @default(0)
+  viewCount           Int         @default(0) @map("view_count")
+
+  sellerName          String      @map("seller_name")
+  sizeDescription     String?     @map("size_description")
+  packageDescription  String?     @map("package_description")
+  preorderDescription String?     @map("preorder_description")
+
+  images              String[]    @default([])
+
+  // Keep flexible for now (matches your JSON preorder object)
+  preorder             Json?
+
+  createdAt           DateTime    @default(now()) @map("created_at")
+  updatedAt           DateTime    @updatedAt @map("updated_at")
+
+  variants            Variant[]
+  campaignItems       CampaignItem[]
+  promotionProducts   PromotionProduct[]
+  orderItems          OrderItem[]
+
+  @@map("products")
+  @@index([categoryId])
+  @@index([slug])
+}
+
+model Variant {
+  id          String   @id @default(uuid())
+  sku         String   @unique
+
+  productId   String   @map("product_id")
+  product     Product  @relation(fields: [productId], references: [id])
+
+  name        String
+  description String?
+  price       Int?
+  stock       Int?
+  images      String[] @default([])
+
+  campaignItems      CampaignItem[]
+  orderItems         OrderItem[]
+
+  @@map("variants")
+  @@index([productId])
+}
+
+/* =========================
+   Campaigns
+========================= */
+
+model Campaign {
+  id             String         @id @default(uuid())
+  name           String
+  slug           String         @unique
+  description    String?
+
+  type           CampaignType   @default(preorder)
+  status         CampaignStatus @default(draft)
+
+  startDate      DateTime       @map("start_date")
+  endDate        DateTime       @map("end_date")
+
+  createdBy      String         @map("created_by")
+  creator        User           @relation(fields: [createdBy], references: [id])
+
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+
+  bannerImage    String?        @map("banner_image")
+  thumbnailImage String?        @map("thumbnail_image")
+
+  // JSON config blocks (match your sample)
+  settings       Json?
+  metadata       Json?
+
+  items          CampaignItem[]
+
+  @@map("campaigns")
+}
+
+model CampaignItem {
+  id            String   @id @default(uuid())
+
+  campaignId    String   @map("campaign_id")
+  campaign      Campaign @relation(fields: [campaignId], references: [id])
+
+  productId     String   @map("product_id")
+  product       Product  @relation(fields: [productId], references: [id])
+
+  variantId     String?  @map("variant_id")
+  variant       Variant? @relation(fields: [variantId], references: [id])
+
+  campaignPrice Int      @map("campaign_price")
+  campaignStock Int      @map("campaign_stock")
+  campaignImage String   @map("campaign_image")
+
+  @@map("campaign_items")
+  @@index([campaignId])
+  @@index([productId])
+  @@unique([campaignId, productId, variantId])
+}
+
+/* =========================
+   Promotions - checked
+========================= */
+
+model Promotion {
+  id          String          @id @default(uuid())
+  code        String          @unique
+  name        String
+  description String?
+
+  status      PromotionStatus @default(active)
+
+  startDate   DateTime        @map("start_date")
+  endDate     DateTime        @map("end_date")
+
+  createdBy   String          @map("created_by")
+  creator     User            @relation(fields: [createdBy], references: [id])
+
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+
+  usedCount   Int             @default(0) @map("used_count")
+
+  // Keep these as Json for flexibility (matches your sample)
+  discount     Json
+  usageLimits  Json           @map("usage_limits")
+
+  products     PromotionProduct[]
+  orders       Order[]
+
+  @@map("promotions")
+  @@index([code])
+  @@index([createdBy])
+}
+
+model PromotionProduct {
+  id           String    @id @default(uuid())
+  promotionId  String    @map("promotion_id")
+  promotion    Promotion @relation(fields: [promotionId], references: [id])
+
+  productId    String    @map("product_id")
+  product      Product   @relation(fields: [productId], references: [id])
+
+  @@map("promotion_products")
+  @@index([promotionId])
+  @@index([productId])
+  @@unique([promotionId, productId])
+}
+
+
+/* =========================
+   Orders - checked
+========================= */
+
+model Order {
+  id           String      @id @default(uuid())
+  status       OrderStatus @default(pending_confirmation)
+  createdAt    DateTime    @default(now()) @map("created_at")
+
+  contact      Json
+  shippingInfo Json        @map("shipping_info")
+  payment      Json
+
+  promotionId  String?     @map("promotion_id")
+  promotion    Promotion?  @relation(fields: [promotionId], references: [id])
+
+  // snapshot of what happened at purchase time
+  promotionSnapshot Json?  @map("promotion_snapshot")
+
+  items        OrderItem[]
+
+  @@map("orders")
+  @@index([status])
+}
+
+model OrderItem {
+  id        String   @id @default(uuid())
+
+  orderId   String   @map("order_id")
+  order     Order    @relation(fields: [orderId], references: [id])
+
+  productId String   @map("product_id")
+  product   Product  @relation(fields: [productId], references: [id])
+
+  variantId String?  @map("variant_id")
+  variant   Variant? @relation(fields: [variantId], references: [id])
+
+  quantity  Int
+
+  @@map("order_items")
+  @@index([orderId])
+  @@index([productId])
 }
