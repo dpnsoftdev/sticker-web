@@ -44,4 +44,24 @@ export const env = cleanEnv(process.env, {
   DB_PASSWORD: str({
     default: "postgres",
   }),
+  // AWS S3 (pre-signed uploads)
+  AWS_REGION: str({
+    default: "ap-northeast-1",
+  }),
+  AWS_ACCESS_KEY: str({
+    default: "",
+    desc: "Leave empty to use default credential chain (e.g. IAM role)",
+  }),
+  AWS_SECRET_KEY: str({
+    default: "",
+    desc: "Leave empty to use default credential chain",
+  }),
+  S3_BUCKET: str({
+    default: "",
+    desc: "S3 bucket name for asset uploads",
+  }),
+  S3_PRESIGNED_EXPIRES_IN: num({
+    default: 900, // 15 minutes
+    desc: "Presigned URL expiration in 15 minutes (max 604800 for 7 days)",
+  }),
 });
