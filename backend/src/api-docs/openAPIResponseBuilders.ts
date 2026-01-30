@@ -3,7 +3,7 @@ import type { z } from "zod";
 
 import { ServiceResponseSchema } from "@/common/models/serviceResponse";
 
-export function createApiResponse(schema: z.ZodTypeAny, description: string, statusCode = StatusCodes.OK) {
+export function createApiResponse(schema: z.ZodTypeAny | null, description: string, statusCode = StatusCodes.OK) {
   return {
     [statusCode]: {
       description,
