@@ -13,6 +13,7 @@ This project is built with **React + TypeScript**, designed for long-term mainta
 - Notification system (toast/snackbar)
 - Enforced code style (ESLint + Prettier)
 - Clear folder structure, easy for team scaling
+- Styling with SASS
 
 ---
 
@@ -135,9 +136,9 @@ Configured in `vite.config.ts`
 
 ## ✅ Scripts
 
-- `yarn dev` — Start dev server
-- `yarn build` — Production build
-- `yarn preview` — Preview build
-- `yarn lint` — Run ESLint
-- `yarn lint:fix` — Fix lint issues
-- `yarn format` — Run Prettier
+- `pnpm dev` — Start dev server
+- `pnpm build` — Production build
+- `pnpm preview` — Preview build
+- `pnpm lint` — Run ESLint
+- `pnpm lint:fix` — Fix lint issues
+- `pnpm format` — Run Prettier

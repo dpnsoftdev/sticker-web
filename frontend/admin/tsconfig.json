@@ -34,8 +34,8 @@
       "@contexts": ["./contexts/index.ts"],
       "@hooks/*": ["./hooks/*"],
       "@hooks": ["./hooks/index.ts"],
-      "@interfaces/*": ["./interfaces/*"],
-      "@interfaces": ["./interfaces/index.ts"],
+      "@layouts/*": ["./layouts/*"],
+      "@layouts": ["./layouts/index.ts"],
       "@router/*": ["./router/*"],
       "@router": ["./router/index.ts"],
       "@pages/*": ["./pages/*"],
@@ -43,7 +43,11 @@
       "@stores/*": ["./stores/*"],
       "@stores": ["./stores/index.ts"],
       "@utils/*": ["./utils/*"],
-      "@utils": ["./utils/index.ts"]
+      "@utils": ["./utils/index.ts"],
+      "@theme/*": ["./theme/*"],
+      "@theme": ["./theme/index.ts"],
+      "@types/*": ["./types/*"],
+      "@types": ["./types/index.ts"],
     }
   },
   "include": ["src"]
