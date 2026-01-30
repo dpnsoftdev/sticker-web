@@ -1,0 +1,50 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "baseUrl": "./src",
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": false,
+
+    /* File Paths */
+    "paths": {
+      "@apis/*": ["./apis/*"],
+      "@apis": ["./apis/index.ts"],
+      "@assets/*": ["./assets/*"],
+      "@assets": ["./assets/index.ts"],
+      "@components/*": ["./components/*"],
+      "@components": ["./components/index.ts"],
+      "@constants/*": ["./constants/*"],
+      "@constants": ["./constants/index.ts"],
+      "@contexts/*": ["./contexts/*"],
+      "@contexts": ["./contexts/index.ts"],
+      "@hooks/*": ["./hooks/*"],
+      "@hooks": ["./hooks/index.ts"],
+      "@interfaces/*": ["./interfaces/*"],
+      "@interfaces": ["./interfaces/index.ts"],
+      "@router/*": ["./router/*"],
+      "@router": ["./router/index.ts"],
+      "@pages/*": ["./pages/*"],
+      "@pages": ["./pages/index.ts"],
+      "@stores/*": ["./stores/*"],
+      "@stores": ["./stores/index.ts"],
+      "@utils/*": ["./utils/*"],
+      "@utils": ["./utils/index.ts"]
+    }
+  },
+  "include": ["src"]
+}
