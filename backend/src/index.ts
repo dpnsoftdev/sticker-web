@@ -9,6 +9,7 @@ import { openAPIRouter } from "@/api-docs/openAPIRouter";
 import { healthCheckRouter } from "@/api/healthCheck/healthCheckRouter";
 import { userRouter } from "@/api/user/userRouter";
 import { productRouter } from "@/api/product/productRouter";
+import { categoryRouter } from "@/api/category/categoryRouter";
 
 import errorHandler from "@/common/middleware/errorHandler";
 import rateLimiter from "@/common/middleware/rateLimiter";
@@ -36,6 +37,7 @@ app.use(requestLogger);
 app.use("/health-check", healthCheckRouter);
 app.use("/users", userRouter);
 app.use("/products", productRouter);
+app.use("/categories", categoryRouter);
 
 // Swagger UI
 app.use(openAPIRouter);

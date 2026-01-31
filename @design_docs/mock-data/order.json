@@ -1,6 +1,6 @@
 {
   "id": "ord_9a2f3c1e",
-  "status": "pending_confirmation", // required, enum: pending_confirmation | payment_confirmed | preparing_shipment | shipped | delivered | cancelled
+  "status": "pending_confirmation", // required, enum: pending_confirmation | payment_confirmed | shipping | cancelled
   "created_at": "2025-12-24T10:00:00Z", // required, auto generated
   "contact": {
     "social_link": "https://facebook.com/...", // required
