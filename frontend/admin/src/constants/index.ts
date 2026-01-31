@@ -8,6 +8,7 @@ export const ROUTES_APP = {
   FORGOT_PASSWORD: "/forgot-password",
   UNAUTHORIZED: "/unauthorized",
   ACCOUNT: "account",
+  DASHBOARD: "/dashboard",
 };
 
 export const USER_API = {
