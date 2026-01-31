@@ -1,5 +1,5 @@
 import { axiosPublic } from "@apis/clientAxios";
-import { AuthData } from "@interfaces";
+import { AuthData } from "types";
 
 import useAuth from "./useAuth";
 

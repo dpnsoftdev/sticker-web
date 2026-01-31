@@ -1,7 +1,7 @@
 import React, { createContext, useState, ReactNode, useEffect } from "react";
 
 import { ROLES_NAME } from "@constants/index";
-import { AuthData } from "@interfaces/index";
+import { AuthData } from "types/index";
 
 export interface AuthContextType {
   auth: AuthData;
@@ -17,7 +17,7 @@ interface AuthProviderProps {
 }
 
 const MOCK_AUTH_DATA: AuthData = {
-  roles: [ROLES_NAME.USER],
+  roles: [ROLES_NAME.ADMIN],
   user: {
     id: "1",
     name: "Admin",
