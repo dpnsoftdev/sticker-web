@@ -9,6 +9,7 @@ export const ROUTES_APP = {
   UNAUTHORIZED: "/unauthorized",
   ACCOUNT: "account",
   DASHBOARD: "/dashboard",
+  CATEGORIES: "/categories",
 };
 
 export const USER_API = {

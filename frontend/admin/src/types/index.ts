@@ -1,3 +1,11 @@
+export type Category = {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  images?: string[];
+};
+
 export interface AuthData {
   roles: string[];
   accessToken?: string;

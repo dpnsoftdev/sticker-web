@@ -294,9 +294,7 @@ An **order / pre-order** store application focused on handmade / collectible pro
 - Order status flow:
   - `pending_confirmation`: Receipt uploaded, waiting for owner confirmation
   - `payment_confirmed`: Payment confirmed by owner
-  - `preparing_shipment`: Preparing items (optional)
-  - `shipped`: Handed to shipping carrier
-  - `delivered`: Customer received items
+  - `shipping`: Order is delivered
   - `cancelled`: Order cancelled (owner, customer, or rejected receipt)
 - Promotion data stored in order:
   - `promotion_id`, `code`, `discount_amount`, `discount_type`

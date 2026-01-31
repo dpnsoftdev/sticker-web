@@ -12,3 +12,11 @@ export const axiosPrivate = axios.create({
   headers: { "Content-Type": "application/json" },
   withCredentials: true,
 });
+
+// set multipart/form-data with boundary when sending FormData
+axiosPrivate.interceptors.request.use(config => {
+  if (config.data instanceof FormData) {
+    delete config.headers["Content-Type"];
+  }
+  return config;
+});

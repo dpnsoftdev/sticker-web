@@ -50,9 +50,7 @@ enum PromotionStatus {
 enum OrderStatus {
   pending_confirmation
   payment_confirmed
-  preparing_shipment
-  shipped
-  delivered
+  shipping
   cancelled
 }
 
@@ -93,7 +91,7 @@ model Category {
   name        String
   slug        String    @unique
   description String?
-  image       String[]  @default([])
+  images      String[]  @default([])
 
   products    Product[]
 
