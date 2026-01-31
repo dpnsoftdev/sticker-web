@@ -34,8 +34,6 @@
       "@contexts": ["./contexts/index.ts"],
       "@hooks/*": ["./hooks/*"],
       "@hooks": ["./hooks/index.ts"],
-      "@layouts/*": ["./layouts/*"],
-      "@layouts": ["./layouts/index.ts"],
       "@router/*": ["./router/*"],
       "@router": ["./router/index.ts"],
       "@pages/*": ["./pages/*"],

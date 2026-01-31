@@ -1,4 +1,4 @@
-import ToastNotifyWrapper from "@components/toast-notify";
+import ToastNotifyWrapper from "@components/common/toast-notify";
 import { AuthProvider } from "@contexts/AuthProvider";
 import AppRouter from "@router/AppRouter";
 

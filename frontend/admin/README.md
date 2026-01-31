@@ -90,11 +90,12 @@ src/
 ├── apis/         # Axios instance, interceptors, API services
 ├── assets/       # Static assets (images, fonts)
 ├── components/   # Reusable UI components (MUI-based)
+├────── layouts/  # Dashboard layout (sidebar, topbar, guards)
+├────── common/   # Common components (button, input,...)
 ├── configs/      # App configs (env mapping, feature flags, etc.)
 ├── constants/    # Constants (routes, query keys, enums)
 ├── contexts/     # App providers (theme, auth, etc.)
 ├── hooks/        # Custom hooks
-├── layouts/      # Dashboard layout (sidebar, topbar, guards)
 ├── pages/        # Page modules (Products, Orders, Customers, etc.)
 ├── router/       # Route definitions & guards
 ├── stores/       # Zustand stores (auth, ui, settings)

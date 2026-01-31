@@ -1,6 +1,10 @@
 import { Suspense } from "react";
 
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import {
+  createBrowserRouter,
+  Navigate,
+  RouterProvider,
+} from "react-router-dom";
 
 import { ROLES_NAME, ROUTES_APP } from "@constants";
 import AccountPage from "@pages/account";
@@ -9,13 +13,17 @@ import ForgotPasswordPage from "@pages/forgot-password";
 import LoginPage from "@pages/login";
 import RegisterPage from "@pages/register";
 import UnauthorizedPage from "@pages/unauthorized";
+import DashboardLayout from "@router/DashboardLayout";
 
 import AppLayout from "./AppLayout";
-import PrivateLayout from "./PrivateLayout";
 import RoleBasedRoute from "./RoleBasedRoute";
 
 const AppLoader = () => {
   return <></>;
+};
+
+const EmptyPage = () => {
+  return <div>EmptyPage</div>;
 };
 
 const AppRouter = () => {
@@ -48,13 +56,33 @@ const AppRouter = () => {
         },
         // @Private Layout
         {
-          path: ROUTES_APP.ROOT,
+          path: "",
           element: (
             <RoleBasedRoute allowedRoles={[ROLES_NAME.ADMIN]}>
-              <PrivateLayout />
+              <DashboardLayout />
             </RoleBasedRoute>
           ),
           children: [
+            /**
+             * When user hits "/" but is already authenticated,
+             * PrivateLayout can decide to render dashboard shell.
+             * You can also redirect here if you want a fixed landing page.
+             */
+            {
+              index: true,
+              element: <Navigate to={ROUTES_APP.DASHBOARD} replace />,
+            },
+            { path: ROUTES_APP.DASHBOARD, element: <EmptyPage /> },
+            { path: "/orders", element: <EmptyPage /> },
+            { path: "/customers", element: <EmptyPage /> },
+            { path: "/coupons", element: <EmptyPage /> },
+            { path: "/categories", element: <EmptyPage /> },
+            { path: "/transactions", element: <EmptyPage /> },
+            { path: "/brands", element: <EmptyPage /> },
+            { path: "/products/new", element: <EmptyPage /> },
+            { path: "/products", element: <EmptyPage /> },
+            { path: "/admins", element: <EmptyPage /> },
+            { path: "/admin-roles", element: <EmptyPage /> },
             {
               path: ROUTES_APP.ACCOUNT,
               element: <AccountPage />,
