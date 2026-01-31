@@ -7,7 +7,7 @@ export const HOME_CATEGORIES: CategoryListResponse[] = [
     name: "Outfit & Doll",
     slug: "outfit-doll",
     description: "Doll, outfit và phụ kiện dễ thương",
-    image: "/images/categories/doll.jpg",
+    images: ["/images/categories/doll.jpg"],
     created_at: "2024-01-01",
     updated_at: "2024-01-01",
     products: [
@@ -66,7 +66,7 @@ export const HOME_CATEGORIES: CategoryListResponse[] = [
     name: "Merch",
     slug: "merch",
     description: "Sticker, badge, goods chính hãng",
-    image: "/images/categories/merch.jpg",
+    images: ["/images/categories/merch.jpg"],
     created_at: "2024-01-01",
     updated_at: "2024-01-01",
     products: [
@@ -100,7 +100,7 @@ export const HOME_CATEGORIES: CategoryListResponse[] = [
     name: "Khác",
     slug: "other",
     description: "Order theo yêu cầu, quà tặng handmade",
-    image: "/images/categories/other.jpg",
+    images: ["/images/categories/other.jpg"],
     created_at: "2024-01-01",
     updated_at: "2024-01-01",
     products: [

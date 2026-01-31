@@ -3,5 +3,5 @@
   "name": "Outfit & Doll", // required,
 	"slug": "outfit-doll", // required,
 	"description": "Outfit & Doll là danh mục chứa các sản phẩm outfit và doll", // optional
-  "image": [] // optional, default []
+  "images": [] // optional, default []
 }

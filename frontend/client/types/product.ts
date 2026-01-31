@@ -45,7 +45,7 @@ export interface Category {
   name: string;
   slug: string;
   description: string | null;
-  image: string | null;
+  images: string[] | null;
   created_at: string;
   updated_at: string;
 }

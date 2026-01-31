@@ -23,41 +23,63 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Category } from "@types";
 
 import { createCategory, fetchCategories } from "@apis/category.api";
+import useToastStore, { type ToastState } from "@stores/toastStore";
 
 import CategoryFormDialog, {
-  CategoryFormValues,
+  type CategoryFormSubmitPayload,
 } from "./components/CategoryFormDialog.tsx";
 
-const QK = {
+const QUERY_KEY = {
   categories: ["categories"] as const,
 };
 
+function getErrorMessage(error: unknown): string {
+  if (error && typeof error === "object" && "response" in error) {
+    const res = (error as { response?: { data?: { message?: string } } })
+      .response;
+    if (res?.data?.message) return res.data.message;
+  }
+  if (error instanceof Error) return error.message;
+  return "Something went wrong. Please try again.";
+}
+
 export default function CategoriesPage() {
-  const qc = useQueryClient();
+  const queryClient = useQueryClient();
+  const showToast = useToastStore((state: ToastState) => state.showToast);
 
   const [open, setOpen] = React.useState(false);
-  const [q, setQ] = React.useState("");
+  const [query, setQuery] = React.useState("");
 
-  const { data, isLoading, isError } = useQuery({
-    queryKey: QK.categories,
+  const {
+    data,
+    isLoading,
+    isError: isGetDataError,
+  } = useQuery({
+    queryKey: QUERY_KEY.categories,
     queryFn: fetchCategories,
     staleTime: 30_000,
   });
 
-  const createMut = useMutation({
-    mutationFn: (values: CategoryFormValues) =>
+  const createMutation = useMutation({
+    mutationFn: (payload: CategoryFormSubmitPayload) =>
       createCategory({
-        name: values.name,
-        slug: values.slug,
-        description: values.description || undefined,
-        image: [],
+        name: payload.name,
+        slug: payload.slug,
+        description: payload.description || undefined,
+        images: payload.images ?? [],
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: QK.categories }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY.categories });
+      showToast("Category created successfully.", "success");
+    },
+    onError: err => {
+      showToast(getErrorMessage(err), "error");
+    },
   });
 
   const rows = React.useMemo(() => {
     const list = (data ?? []) as Category[];
-    const keyword = q.trim().toLowerCase();
+    const keyword = query.trim().toLowerCase();
     if (!keyword) return list;
 
     return list.filter(c => {
@@ -65,10 +87,10 @@ export default function CategoriesPage() {
       const slug = (c.slug || "").toLowerCase();
       return name.includes(keyword) || slug.includes(keyword);
     });
-  }, [data, q]);
+  }, [data, query]);
 
-  const handleCreate = async (values: CategoryFormValues) => {
-    await createMut.mutateAsync(values);
+  const handleCreate = async (payload: CategoryFormSubmitPayload) => {
+    await createMutation.mutateAsync(payload);
   };
 
   return (
@@ -91,13 +113,14 @@ export default function CategoriesPage() {
           <TextField
             size="small"
             placeholder="Search by name or slug..."
-            value={q}
-            onChange={e => setQ(e.target.value)}
+            value={query}
+            onChange={e => setQuery(e.target.value)}
           />
           <Button
             variant="contained"
             startIcon={<AddRoundedIcon />}
             onClick={() => setOpen(true)}
+            disabled={createMutation.isPending}
           >
             Add Category
           </Button>
@@ -115,13 +138,7 @@ export default function CategoriesPage() {
             </Stack>
           )}
 
-          {isError && (
-            <Typography color="error">
-              Failed to load categories. Please try again.
-            </Typography>
-          )}
-
-          {!isLoading && !isError && (
+          {!isLoading && !isGetDataError && (
             <Table>
               <TableHead>
                 <TableRow>
@@ -155,7 +172,7 @@ export default function CategoriesPage() {
                     </TableCell>
 
                     <TableCell align="right">
-                      {(c.image?.length ?? 0).toString()}
+                      {(c.images?.length ?? 0).toString()}
                     </TableCell>
 
                     <TableCell align="right">

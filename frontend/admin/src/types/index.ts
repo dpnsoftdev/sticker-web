@@ -3,7 +3,7 @@ export type Category = {
   name: string;
   slug: string;
   description?: string;
-  image?: string[];
+  images?: string[];
 };
 
 export interface AuthData {

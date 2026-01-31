@@ -1,5 +1,6 @@
 // src/api/category/categoryRouter.ts
 import { Router } from "express";
+import multer from "multer";
 import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 
 import { createApiResponse } from "@/api-docs/openAPIResponseBuilders";
@@ -9,6 +10,11 @@ import { validateRequest } from "@/common/utils/httpHandlers";
 
 export const categoryRegistry = new OpenAPIRegistry();
 export const categoryRouter = Router();
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB per file
+});
 
 /* =======================
   GET /categories
@@ -28,13 +34,27 @@ categoryRouter.get("/", categoryController.getList);
 ======================= */
 categoryRegistry.registerPath({
   method: "post",
-  path: "/categories",
+  path: "/categories/create",
   tags: ["Category"],
   request: {
     body: {
       content: {
-        "application/json": {
-          schema: CreateCategorySchema.shape.body,
+        "multipart/form-data": {
+          schema: {
+            type: "object",
+            required: ["name", "slug"],
+            properties: {
+              name: { type: "string" },
+              slug: { type: "string" },
+              description: { type: "string" },
+              images: {
+                type: "array",
+                items: { type: "string", format: "binary" },
+                maxItems: 5,
+                description: "Category images (max 5, 20MB each)",
+              },
+            },
+          },
         },
       },
     },
@@ -42,4 +62,9 @@ categoryRegistry.registerPath({
   responses: createApiResponse(CategorySchema, "Category created", 201),
 });
 
-categoryRouter.post("/create", validateRequest(CreateCategorySchema), categoryController.create);
+categoryRouter.post(
+  "/create",
+  upload.array("images", 5),
+  validateRequest(CreateCategorySchema),
+  categoryController.create,
+);

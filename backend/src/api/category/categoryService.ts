@@ -19,7 +19,7 @@ export const categoryService = {
       name: data.name,
       slug: data.slug,
       description: data.description ?? null,
-      image: data.image ?? [],
+      images: data.images ?? [],
     });
     return ServiceResponse.success("Category created", category, StatusCodes.CREATED);
   },

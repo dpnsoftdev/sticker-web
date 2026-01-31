@@ -8,22 +8,22 @@ Lược đồ quan hệ giữa các bảng trong hệ thống Sticker Web
 erDiagram
     USER ||--o{ CAMPAIGN : "creates"
     USER ||--o{ PROMOTION : "creates"
-    
+
     CATEGORY ||--o{ PRODUCT : "contains"
-    
+
     PRODUCT ||--o{ VARIANT : "has"
     PRODUCT }o--o{ CAMPAIGN : "included_in"
     PRODUCT }o--o{ PROMOTION : "applicable_to"
     PRODUCT ||--o{ ORDER_ITEM : "ordered_in"
-    
+
     VARIANT }o--o{ CAMPAIGN : "included_in"
     VARIANT }o--o{ PROMOTION : "applicable_to"
     VARIANT ||--o{ ORDER_ITEM : "ordered_in"
-    
+
     PROMOTION ||--o{ ORDER : "applied_to"
-    
+
     ORDER ||--o{ ORDER_ITEM : "contains"
-    
+
     USER {
         string id PK
         string email UK
@@ -39,15 +39,15 @@ erDiagram
         datetime updated_at
         datetime last_login_at
     }
-    
+
     CATEGORY {
         string id PK
         string name
         string slug UK
         string description
-        array image
+        array images
     }
-    
+
     PRODUCT {
         string id PK
         string sku UK
@@ -68,7 +68,7 @@ erDiagram
         array images
         object preorder
     }
-    
+
     VARIANT {
         string id PK
         string sku UK
@@ -79,7 +79,7 @@ erDiagram
         number stock
         array images
     }
-    
+
     CAMPAIGN {
         string id PK
         string name
@@ -98,7 +98,7 @@ erDiagram
         object settings
         object metadata
     }
-    
+
     PROMOTION {
         string id PK
         string code UK
@@ -116,7 +116,7 @@ erDiagram
         object applicable_to
         object metadata
     }
-    
+
     ORDER {
         string id PK
         string status
@@ -127,7 +127,7 @@ erDiagram
         object promotion
         array itemIds
     }
-    
+
     ORDER_ITEM {
         string product_id FK
         string variant_id FK
@@ -138,16 +138,19 @@ erDiagram
 ## Mối quan hệ chi tiết
 
 ### 1. USER (Người dùng)
+
 - **1:N** với CAMPAIGN (một user tạo nhiều campaign)
   - Foreign Key: `campaign.created_by` → `user.id`
 - **1:N** với PROMOTION (một user tạo nhiều promotion)
   - Foreign Key: `promotion.created_by` → `user.id`
 
 ### 2. CATEGORY (Danh mục)
+
 - **1:N** với PRODUCT (một category chứa nhiều product)
   - Foreign Key: `product.category_id` → `category.id`
 
 ### 3. PRODUCT (Sản phẩm)
+
 - **N:1** với CATEGORY (nhiều product thuộc một category)
   - Foreign Key: `product.category_id` → `category.id`
 - **1:N** với VARIANT (một product có nhiều variant)
@@ -160,6 +163,7 @@ erDiagram
   - Foreign Key: `order.itemIds[].product_id` → `product.id`
 
 ### 4. VARIANT (Phân loại sản phẩm)
+
 - **N:1** với PRODUCT (nhiều variant thuộc một product)
   - Foreign Key: `variant.product_id` → `product.id`
 - **N:M** với CAMPAIGN (nhiều variant có thể trong nhiều campaign)
@@ -170,6 +174,7 @@ erDiagram
   - Foreign Key: `order.itemIds[].variant_id` → `variant.id`
 
 ### 5. CAMPAIGN (Chiến dịch)
+
 - **N:1** với USER (nhiều campaign được tạo bởi một user)
   - Foreign Key: `campaign.created_by` → `user.id`
 - **N:M** với PRODUCT (nhiều campaign chứa nhiều product)
@@ -178,6 +183,7 @@ erDiagram
   - Quan hệ qua `campaign.items[].variant_id`
 
 ### 6. PROMOTION (Khuyến mãi)
+
 - **N:1** với USER (nhiều promotion được tạo bởi một user)
   - Foreign Key: `promotion.created_by` → `user.id`
 - **1:N** với ORDER (một promotion có thể áp dụng cho nhiều order)
@@ -188,12 +194,14 @@ erDiagram
   - Quan hệ qua `promotion.applicable_to.variants[]`
 
 ### 7. ORDER (Đơn hàng)
+
 - **1:N** với ORDER_ITEM (một order chứa nhiều order item)
   - Quan hệ qua `order.itemIds[]`
 - **N:1** với PROMOTION (nhiều order có thể dùng một promotion)
   - Foreign Key: `order.promotion.promotion_id` → `promotion.id`
 
 ### 8. ORDER_ITEM (Chi tiết đơn hàng)
+
 - **N:1** với PRODUCT (nhiều order item thuộc một product)
   - Foreign Key: `order.itemIds[].product_id` → `product.id`
 - **N:1** với VARIANT (nhiều order item thuộc một variant, optional)
