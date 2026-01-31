@@ -13,7 +13,6 @@ This project is built with **React + TypeScript**, designed for long-term mainta
 - Notification system (toast/snackbar)
 - Enforced code style (ESLint + Prettier)
 - Clear folder structure, easy for team scaling
-- Styling with SASS
 
 ---
 
