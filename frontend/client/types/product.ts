@@ -2,7 +2,6 @@ export type ProductType = "in_stock" | "preorder";
 
 export interface Product {
   id: string;
-  sku: string;
   name: string;
   slug: string;
   category_id: string | null;
@@ -29,7 +28,6 @@ export interface Product {
 export interface Variant {
   id: string;
   product_id: string;
-  sku: string;
   name: string;
   description: string | null;
   price: number | null;

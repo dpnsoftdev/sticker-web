@@ -20,7 +20,6 @@ export type ProductType = "in_stock" | "preorder";
 
 export type Product = {
   id: string;
-  sku: string | null;
   name: string;
   slug: string;
   categoryId: string;
@@ -43,7 +42,6 @@ export type Product = {
 
 export type Variant = {
   id: string;
-  sku: string;
   productId: string;
   name: string;
   description: string | null;

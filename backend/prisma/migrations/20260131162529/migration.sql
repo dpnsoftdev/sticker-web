@@ -60,7 +60,6 @@ CREATE TABLE "categories" (
 -- CreateTable
 CREATE TABLE "products" (
     "id" TEXT NOT NULL,
-    "sku" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
     "category_id" TEXT NOT NULL,
@@ -86,7 +85,6 @@ CREATE TABLE "products" (
 -- CreateTable
 CREATE TABLE "variants" (
     "id" TEXT NOT NULL,
-    "sku" TEXT NOT NULL,
     "product_id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
@@ -188,9 +186,6 @@ CREATE TABLE "order_items" (
 CREATE UNIQUE INDEX "categories_slug_key" ON "categories"("slug");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "products_sku_key" ON "products"("sku");
-
--- CreateIndex
 CREATE UNIQUE INDEX "products_slug_key" ON "products"("slug");
 
 -- CreateIndex
@@ -199,8 +194,6 @@ CREATE INDEX "products_category_id_idx" ON "products"("category_id");
 -- CreateIndex
 CREATE INDEX "products_slug_idx" ON "products"("slug");
 
--- CreateIndex
-CREATE UNIQUE INDEX "variants_sku_key" ON "variants"("sku");
 
 -- CreateIndex
 CREATE INDEX "variants_product_id_idx" ON "variants"("product_id");

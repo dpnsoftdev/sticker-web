@@ -26,8 +26,10 @@ export const cartItemIdOf = (productId: string, variantId?: string) =>
 export const clampQty = (n: number) =>
   Number.isFinite(n) ? Math.max(1, Math.floor(n)) : 1;
 
-export const getUnitPrice = (item: { campaignPrice?: number; price?: number }) =>
-  item.campaignPrice ?? item.price ?? 0;
+export const getUnitPrice = (item: {
+  campaignPrice?: number;
+  price?: number;
+}) => item.campaignPrice ?? item.price ?? 0;
 
 export const formatVND = (n: number) => `${n.toLocaleString("vi-VN")}đ`;
 
@@ -35,19 +37,24 @@ export const useCartStore = create<CartStore>()(
   persist(
     (set, get) => ({
       items: [],
-      addItem: (input) => {
-        const cartItemId = input.cartItemId ?? cartItemIdOf(input.productId, input.variantId);
+      addItem: input => {
+        const cartItemId =
+          input.cartItemId ?? cartItemIdOf(input.productId, input.variantId);
         const quantity = clampQty(input.quantity);
 
-        set((state) => {
+        set(state => {
           // Check if the item already exists in the cart
-          const existingIndex = state.items.findIndex((i) => i.cartItemId === cartItemId);
+          const existingIndex = state.items.findIndex(
+            i => i.cartItemId === cartItemId
+          );
           if (existingIndex !== -1) {
-            // Merge by creating a new array 
+            // Merge by creating a new array
             const updatedItems = [...state.items];
             updatedItems[existingIndex] = {
               ...updatedItems[existingIndex],
-              quantity: clampQty(updatedItems[existingIndex].quantity + quantity), // Ensure clamped result
+              quantity: clampQty(
+                updatedItems[existingIndex].quantity + quantity
+              ), // Ensure clamped result
             };
             return { items: updatedItems };
           } else {
@@ -59,7 +66,6 @@ export const useCartStore = create<CartStore>()(
               quantity,
               productName: input.productName ?? "",
               variantName: input.variantName ?? "",
-              sku: input.sku,
               price: input.price,
               campaignPrice: input.campaignPrice,
               image: input.image,
@@ -70,14 +76,16 @@ export const useCartStore = create<CartStore>()(
       },
 
       hydrateItem: (cartItemId, patch) => {
-        set((state) => ({
-          items: state.items.map((i) => (i.cartItemId === cartItemId ? { ...i, ...patch } : i)),
+        set(state => ({
+          items: state.items.map(i =>
+            i.cartItemId === cartItemId ? { ...i, ...patch } : i
+          ),
         }));
       },
 
-      removeItem: (cartItemId) => {
-        set((state) => ({
-          items: state.items.filter((i) => i.cartItemId !== cartItemId),
+      removeItem: cartItemId => {
+        set(state => ({
+          items: state.items.filter(i => i.cartItemId !== cartItemId),
         }));
       },
 
@@ -87,19 +95,21 @@ export const useCartStore = create<CartStore>()(
           return;
         }
         const q = clampQty(quantity);
-        set((state) => ({
-          items: state.items.map((i) => (i.cartItemId === cartItemId ? { ...i, quantity: q } : i)),
+        set(state => ({
+          items: state.items.map(i =>
+            i.cartItemId === cartItemId ? { ...i, quantity: q } : i
+          ),
         }));
       },
 
-      incrementQuantity: (cartItemId) => {
-        const item = get().items.find((i) => i.cartItemId === cartItemId);
+      incrementQuantity: cartItemId => {
+        const item = get().items.find(i => i.cartItemId === cartItemId);
         if (!item) return;
         get().setQuantity(cartItemId, item.quantity + 1);
       },
 
-      decrementQuantity: (cartItemId) => {
-        const item = get().items.find((i) => i.cartItemId === cartItemId);
+      decrementQuantity: cartItemId => {
+        const item = get().items.find(i => i.cartItemId === cartItemId);
         if (!item) return;
         get().setQuantity(cartItemId, item.quantity - 1);
       },
@@ -107,14 +117,18 @@ export const useCartStore = create<CartStore>()(
       clearCart: () => set({ items: [] }),
 
       getSubtotal: () =>
-        get().items.reduce((sum, item) => sum + getUnitPrice(item) * item.quantity, 0),
+        get().items.reduce(
+          (sum, item) => sum + getUnitPrice(item) * item.quantity,
+          0
+        ),
 
-      getItemCount: () => get().items.reduce((sum, item) => sum + item.quantity, 0),
+      getItemCount: () =>
+        get().items.reduce((sum, item) => sum + item.quantity, 0),
     }),
     {
       name: "cart-storage",
       storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({ items: state.items }),
+      partialize: state => ({ items: state.items }),
       version: 1,
     }
   )

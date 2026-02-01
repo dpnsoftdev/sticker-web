@@ -1,6 +1,5 @@
 {
   "id": "var-101",
-  "sku": "VAR-BAN-THUONG-001", // required, unique, Stock Keeping Unit
   "product_id": "c2a1f2d8-3f2e-4d51-a2d4-6e1d0c9f1111", // required
   "name": "Bản thường", // required
   "description": "Bản thường là bản in thường của sản phẩm", // optional

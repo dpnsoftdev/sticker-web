@@ -9,7 +9,6 @@ const productTypeEnum = z.enum(["in_stock", "preorder"]);
 
 export const ProductSchema = z.object({
   id: z.string().uuid(),
-  sku: z.string(),
   name: z.string(),
   slug: z.string(),
 

@@ -1,6 +1,5 @@
 {
   "id": "9c8f3c6a-2d41-4c9e-9f65-1c8e1b6a0a01",
-  "sku": "PRD-OUTFIT-THO-DAU-001", // required, unique, Stock Keeping Unit
   "name": "Outfit Thỏ Dâu Cương Thi 💜", // required
   "slug": "outfit-tho-dau-cuong-thi", // required
   "category_id": "cat-101", // required, default Uncategorized
