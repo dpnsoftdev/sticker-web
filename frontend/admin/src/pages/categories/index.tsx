@@ -24,6 +24,7 @@ import type { Category } from "@types";
 
 import { createCategory, fetchCategories } from "@apis/category.api";
 import useToastStore, { type ToastState } from "@stores/toastStore";
+import { getApiErrorMessage } from "@utils";
 
 import CategoryFormDialog, {
   type CategoryFormSubmitPayload,
@@ -32,16 +33,6 @@ import CategoryFormDialog, {
 const QUERY_KEY = {
   categories: ["categories"] as const,
 };
-
-function getErrorMessage(error: unknown): string {
-  if (error && typeof error === "object" && "response" in error) {
-    const res = (error as { response?: { data?: { message?: string } } })
-      .response;
-    if (res?.data?.message) return res.data.message;
-  }
-  if (error instanceof Error) return error.message;
-  return "Something went wrong. Please try again.";
-}
 
 export default function CategoriesPage() {
   const queryClient = useQueryClient();
@@ -73,7 +64,7 @@ export default function CategoriesPage() {
       showToast("Category created successfully.", "success");
     },
     onError: err => {
-      showToast(getErrorMessage(err), "error");
+      showToast(getApiErrorMessage(err), "error");
     },
   });
 

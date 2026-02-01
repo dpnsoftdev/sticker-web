@@ -48,36 +48,39 @@ export function Sidebar(props: SidebarProps) {
           gap: 1,
         }}
       >
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 1,
-            overflow: "hidden",
-          }}
-        >
+        {open && (
           <Box
             sx={{
-              width: 34,
-              height: 34,
-              borderRadius: 2,
-              display: "grid",
-              placeItems: "center",
-              bgcolor: "primary.main",
-              color: "primary.contrastText",
-              fontWeight: 800,
-              flex: "0 0 auto",
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              overflow: "hidden",
             }}
           >
-            E
-          </Box>
-
-          {open && (
-            <Typography variant="h6" noWrap sx={{ fontWeight: 700 }}>
-              evaly
+            <Box
+              sx={{
+                width: 34,
+                height: 34,
+                borderRadius: 2,
+                display: "grid",
+                placeItems: "center",
+                bgcolor: "primary.main",
+                color: "primary.contrastText",
+                fontWeight: 800,
+                flex: "0 0 auto",
+              }}
+            >
+              🍡
+            </Box>
+            <Typography
+              variant="h6"
+              noWrap
+              sx={{ fontWeight: 700, color: "pink.main" }}
+            >
+              Dango
             </Typography>
-          )}
-        </Box>
+          </Box>
+        )}
 
         {open && (
           <IconButton

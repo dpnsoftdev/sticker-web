@@ -5,11 +5,11 @@
   "slug": "outfit-tho-dau-cuong-thi", // required
   "category_id": "cat-101", // required, default Uncategorized
   "product_type": "in_stock", // required, default in_stock, enum: in_stock | preorder
-  "price": 157000, // required
+  "price": 157000, // optional when has_variants, default null
+  "stock": 79, // optional when has_variants, default null
 	"currency": "VND", // default VND
 	"price_note": "Chưa full phí", // optional
   "shipping_note": "Chưa bao gồm ship nội địa 23.5k", // optional
-  "stock": 79, // required, default 0
 	"view_count": 90, // default 90
   "seller_name": "宇宙大売蛙", // required
 	"size_description": "10cm, vòng đầu <= 23cm", // optional

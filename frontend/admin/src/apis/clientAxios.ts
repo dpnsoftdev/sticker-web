@@ -1,5 +1,8 @@
 import axios from "axios";
 
+import useToastStore from "@stores/toastStore";
+import { getApiErrorMessage } from "@utils";
+
 // Create axios instance with default config
 const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
@@ -20,3 +23,13 @@ axiosPrivate.interceptors.request.use(config => {
   }
   return config;
 });
+
+// Global error handling: show toast for any API error
+axiosPrivate.interceptors.response.use(
+  res => res,
+  error => {
+    const message = getApiErrorMessage(error);
+    useToastStore.getState().showToast(message, "error");
+    return Promise.reject(error);
+  }
+);

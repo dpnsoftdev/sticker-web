@@ -14,7 +14,9 @@ export async function fetchCategories(): Promise<Category[]> {
   return res.data?.data ?? res.data;
 }
 
-export async function createCategory(payload: CreateCategoryFormData): Promise<Category> {
+export async function createCategory(
+  payload: CreateCategoryFormData
+): Promise<Category> {
   const formData = new FormData();
   formData.append("name", payload.name);
   formData.append("slug", payload.slug);

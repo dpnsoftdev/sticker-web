@@ -1,8 +1,6 @@
 import * as React from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import CloudUploadRoundedIcon from "@mui/icons-material/CloudUploadRounded";
-import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 import {
   Dialog,
   DialogTitle,
@@ -11,19 +9,15 @@ import {
   Button,
   Stack,
   TextField,
-  Box,
-  IconButton,
-  Typography,
 } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import FileUploader from "@components/common/file-uploader";
 import { slugify } from "@utils";
 
 const MAX_IMAGES = 5;
 const MAX_FILE_SIZE_MB = 5;
-const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
-const ACCEPT_IMAGES = "image/jpeg,image/png,image/gif,image/webp";
 
 const schema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -61,43 +55,7 @@ export default function CategoryFormDialog({ open, onClose, onSubmit }: Props) {
 
   const [slugTouched, setSlugTouched] = React.useState(false);
   const [images, setImages] = React.useState<File[]>([]);
-  const [previewUrls, setPreviewUrls] = React.useState<string[]>([]);
-  const [imageError, setImageError] = React.useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
-
-  const validateAndAddImages = (files: FileList | null) => {
-    setImageError(null);
-    if (!files?.length) return;
-
-    const next = [...images];
-    for (let i = 0; i < files.length; i++) {
-      if (next.length >= MAX_IMAGES) {
-        setImageError(`Maximum ${MAX_IMAGES} images allowed.`);
-        break;
-      }
-      const file = files[i];
-      if (!file.type.startsWith("image/")) {
-        setImageError("Only image files (JPEG, PNG, GIF, WebP) are allowed.");
-        break;
-      }
-      if (file.size > MAX_FILE_SIZE_BYTES) {
-        setImageError(`Each image must be under ${MAX_FILE_SIZE_MB}MB.`);
-        break;
-      }
-      next.push(file);
-    }
-
-    const newImages = next.slice(0, MAX_IMAGES);
-    setImages(newImages);
-    setPreviewUrls(newImages.map(f => URL.createObjectURL(f)));
-  };
-
-  const removeImage = (index: number) => {
-    setImages(prev => prev.filter((_, i) => i !== index));
-    setPreviewUrls(prev => prev.filter((_, i) => i !== index));
-    setImageError(null);
-    URL.revokeObjectURL(previewUrls[index]);
-  };
 
   // Auto-generate slug from name until user edits slug manually
   React.useEffect(() => {
@@ -112,15 +70,9 @@ export default function CategoryFormDialog({ open, onClose, onSubmit }: Props) {
       reset();
       setSlugTouched(false);
       setImages([]);
-      setPreviewUrls([]);
-      setImageError(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   }, [open, reset]);
-
-  React.useEffect(() => {
-    return () => previewUrls.forEach(URL.revokeObjectURL);
-  }, [previewUrls]);
 
   const submit = handleSubmit(async values => {
     try {
@@ -175,87 +127,14 @@ export default function CategoryFormDialog({ open, onClose, onSubmit }: Props) {
             minRows={3}
           />
 
-          <Box>
-            <Typography
-              variant="subtitle2"
-              color="text.secondary"
-              sx={{ mb: 1 }}
-            >
-              Images (max {MAX_IMAGES}, {MAX_FILE_SIZE_MB}MB each)
-            </Typography>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept={ACCEPT_IMAGES}
-              multiple
-              hidden
-              onChange={e => validateAndAddImages(e.target.files)}
-            />
-            <Button
-              variant="outlined"
-              startIcon={<CloudUploadRoundedIcon />}
-              onClick={() => fileInputRef.current?.click()}
-              disabled={images.length >= MAX_IMAGES}
-              size="medium"
-            >
-              Upload images
-            </Button>
-            {imageError && (
-              <Typography
-                variant="caption"
-                color="error"
-                display="block"
-                sx={{ mt: 0.5 }}
-              >
-                {imageError}
-              </Typography>
-            )}
-            {images.length > 0 && (
-              <Stack direction="row" flexWrap="wrap" gap={1} sx={{ mt: 1.5 }}>
-                {images.map((file, index) => (
-                  <Box
-                    key={`${file.name}-${index}`}
-                    sx={{
-                      position: "relative",
-                      width: 72,
-                      height: 72,
-                      borderRadius: 1.5,
-                      overflow: "hidden",
-                      border: 1,
-                      borderColor: "divider",
-                      bgcolor: "action.hover",
-                    }}
-                  >
-                    <img
-                      src={previewUrls[index]}
-                      alt={file.name}
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                      }}
-                    />
-                    <IconButton
-                      size="small"
-                      onClick={() => removeImage(index)}
-                      sx={{
-                        position: "absolute",
-                        top: 2,
-                        right: 2,
-                        bgcolor: "background.paper",
-                        "&:hover": { bgcolor: "action.selected" },
-                        width: 24,
-                        height: 24,
-                      }}
-                      aria-label="Remove image"
-                    >
-                      <DeleteOutlineRoundedIcon fontSize="small" />
-                    </IconButton>
-                  </Box>
-                ))}
-              </Stack>
-            )}
-          </Box>
+          <FileUploader
+            value={images}
+            onChange={setImages}
+            maxFiles={MAX_IMAGES}
+            maxFileSizeMb={MAX_FILE_SIZE_MB}
+            label={`Images (max ${MAX_IMAGES}, ${MAX_FILE_SIZE_MB}MB each)`}
+            inputRef={fileInputRef}
+          />
         </Stack>
       </DialogContent>
 
