@@ -10,6 +10,7 @@ import { healthCheckRouter } from "@/api/healthCheck/healthCheckRouter";
 import { userRouter } from "@/api/user/userRouter";
 import { productRouter } from "@/api/product/productRouter";
 import { categoryRouter } from "@/api/category/categoryRouter";
+import { variantRouter } from "@/api/variant/variantRouter";
 import { assetRouter } from "@/api/assets/assetRouter";
 
 import errorHandler from "@/common/middleware/errorHandler";
@@ -39,6 +40,7 @@ app.use("/health-check", healthCheckRouter);
 app.use("/users", userRouter);
 app.use("/products", productRouter);
 app.use("/categories", categoryRouter);
+app.use("/variants", variantRouter);
 app.use("/assets", assetRouter);
 
 // Swagger UI
