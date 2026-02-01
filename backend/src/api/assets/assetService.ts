@@ -1,5 +1,5 @@
 // src/api/assets/assetService.ts
-import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { CopyObjectCommand, DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { randomUUID } from "node:crypto";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { StatusCodes } from "http-status-codes";
@@ -10,6 +10,7 @@ import { env } from "@/common/utils/envConfig";
 
 import type { DirectUploadResponse, PresignedUploadBody, PresignedUploadResponse } from "./assetModel";
 import { createS3Client } from "@/common/utils/s3";
+import { S3_PREFIX_FOLDERS } from "@/common/constants";
 
 export const assetService = {
   getPresignedUploadUrl: async (
@@ -82,5 +83,65 @@ export const assetService = {
       key,
       message: "Use this key to reference the file (e.g. build public URL).",
     });
+  },
+
+  /**
+   * Copy an object within the same bucket. Returns the destination key.
+   */
+  copyObject: async (sourceKey: string, destKey: string): Promise<{ key: string }> => {
+    if (!env.S3_BUCKET) {
+      throw new Error("S3 upload is not configured (S3_BUCKET missing)");
+    }
+    const client = createS3Client();
+    await client.send(
+      new CopyObjectCommand({
+        Bucket: env.S3_BUCKET,
+        CopySource: `${env.S3_BUCKET}/${sourceKey}`,
+        Key: destKey,
+      }),
+    );
+    return { key: destKey };
+  },
+
+  /**
+   * Move an object within the same bucket (copy then delete). Returns the destination key.
+   */
+  moveObject: async (sourceKey: string, destKey: string): Promise<{ key: string }> => {
+    await assetService.copyObject(sourceKey, destKey);
+    if (!env.S3_BUCKET) {
+      throw new Error("S3 upload is not configured (S3_BUCKET missing)");
+    }
+    const client = createS3Client();
+    await client.send(
+      new DeleteObjectCommand({
+        Bucket: env.S3_BUCKET,
+        Key: sourceKey,
+      }),
+    );
+    return { key: destKey };
+  },
+
+  /**
+   * For each key that starts with "tmp/", move the object to "products/" (same basename).
+   * Keys already under "products/" or other prefixes are returned unchanged.
+   * Returns the final list of keys to store in the product.
+   */
+  moveTmpKeysToProducts: async (keys: string[]): Promise<string[]> => {
+    if (!env.S3_BUCKET || !keys.length) {
+      return keys;
+    }
+    const result: string[] = [];
+    for (const key of keys) {
+      const normalized = key.startsWith("/") ? key.slice(1) : key;
+      if (normalized.startsWith(`${S3_PREFIX_FOLDERS.TMP}/`)) {
+        const basename = path.basename(normalized);
+        const destKey = `${S3_PREFIX_FOLDERS.PRODUCTS}/${basename}`;
+        await assetService.moveObject(normalized, destKey);
+        result.push(destKey);
+      } else {
+        result.push(normalized);
+      }
+    }
+    return result;
   },
 };

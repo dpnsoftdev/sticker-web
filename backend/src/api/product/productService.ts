@@ -1,13 +1,13 @@
 // src/api/product/productService.ts
 import { StatusCodes } from "http-status-codes";
 import { ServiceResponse } from "@/common/models/serviceResponse";
+import { assetService } from "@/api/assets/assetService";
 import { productRepository } from "./productRepository";
 import { ProductListQuery } from "./productModel";
 
 export const productService = {
   list: async (query: ProductListQuery) => {
     const products = await productRepository.findMany(query);
-    console.log("products =>", products);
     return ServiceResponse.success("Products retrieved", products, StatusCodes.OK);
   },
 
@@ -21,7 +21,10 @@ export const productService = {
   },
 
   create: async (data: any) => {
-    const product = await productRepository.create(data);
+    const images = Array.isArray(data.images) ? data.images : [];
+    const resolvedImages = await assetService.moveTmpKeysToProducts(images);
+    const payload = { ...data, images: resolvedImages };
+    const product = await productRepository.create(payload);
     return ServiceResponse.success("Product created", product, StatusCodes.CREATED);
   },
 

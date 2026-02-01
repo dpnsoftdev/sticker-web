@@ -40,7 +40,7 @@ export async function uploadFileViaPresigned(
     contentType: payload.contentType,
     prefix: payload.prefix ?? "products",
   });
-  const putRes = await fetch(uploadUrl + "123", {
+  const putRes = await fetch(uploadUrl, {
     method: "PUT",
     body: file,
     headers: {
