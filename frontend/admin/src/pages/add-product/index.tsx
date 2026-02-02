@@ -22,48 +22,84 @@ import {
   ToggleButtonGroup,
   Typography,
 } from "@mui/material";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Category } from "@types";
-import { useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { fetchCategories } from "@apis/category.api";
 import { createProduct } from "@apis/product.api";
 import PresignedUploader from "@components/common/presigned-uploader";
 import useToastStore, { type ToastState } from "@stores/toastStore";
-import { getApiErrorMessage, slugify } from "@utils";
+import { slugify } from "@utils";
 
 const MAX_PRODUCT_IMAGES = 10;
 const MAX_FILE_SIZE_MB = 5;
 
-const productSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  sku: z.string().nullable().optional(),
-  slug: z.string().min(1, "Slug is required"),
-  categoryId: z.string().min(1, "Select a category"),
-  productType: z.enum(["in_stock", "preorder"]),
+const variantSchema = z.object({
+  id: z.string(),
+  name: z.string().trim().min(1, "Variant name is required"),
+  description: z.string().optional().default(""),
   price: z.coerce.number().int().min(0, "Price must be ≥ 0"),
-  currency: z.string().default("VND"),
-  priceNote: z.string().optional(),
-  shippingNote: z.string().optional(),
-  stock: z.coerce.number().int().min(0).default(0),
-  sellerName: z.string().min(1, "Seller name is required"),
-  sizeDescription: z.string().optional(),
-  packageDescription: z.string().optional(),
-  preorderDescription: z.string().optional(),
+  stock: z.coerce.number().int().min(0, "Stock must be a whole number ≥ 0"),
 });
+
+const productSchema = z
+  .object({
+    name: z.string().min(1, "Name is required"),
+    slug: z.string().min(1, "Slug is required"),
+    categoryId: z.string().min(1, "Select a category"),
+    productType: z.enum(["in_stock", "preorder"]),
+    price: z.coerce
+      .number()
+      .int()
+      .min(0, "Price must be ≥ 0")
+      .nullable()
+      .optional(),
+    currency: z.string().default("VND"),
+    priceNote: z.string().optional(),
+    shippingNote: z.string().optional(),
+    stock: z.coerce.number().int().min(0, "Stock must be a whole number ≥ 0"),
+    sellerName: z.string().min(1, "Seller name is required"),
+    sizeDescription: z.string().optional(),
+    packageDescription: z.string().optional(),
+    preorderDescription: z.string().optional(),
+    hasVariants: z.boolean().default(false),
+    variants: z.array(variantSchema).default([]),
+  })
+  .superRefine((val, ctx) => {
+    if (val.hasVariants) {
+      if (val.variants.length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["variants"],
+          message: "Add at least one variant when using With variants.",
+        });
+      }
+    } else {
+      if (val.variants.length > 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["variants"],
+          message: "Remove variants when using Single product.",
+        });
+      }
+    }
+  });
 
 export type ProductFormValues = z.infer<typeof productSchema>;
 
-export type VariantRow = {
-  id: string;
-  name: string;
-  description: string;
-  price: string;
-  stock: string;
-};
-
 const QUERY_KEY = { categories: ["categories"] as const };
+
+function makeEmptyVariant() {
+  return {
+    id: crypto.randomUUID(),
+    name: "",
+    description: "",
+    price: 0,
+    stock: 0,
+  };
+}
 
 export default function AddProductPage() {
   const queryClient = useQueryClient();
@@ -78,43 +114,49 @@ export default function AddProductPage() {
     staleTime: 30_000,
   });
 
-  const [hasVariants, setHasVariants] = React.useState(false);
-  const [variants, setVariants] = React.useState<VariantRow[]>([]);
-
   const {
     register,
+    control,
     handleSubmit,
     watch,
     setValue,
     formState: { errors, isSubmitting },
+    clearErrors,
   } = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
     defaultValues: {
       name: "",
-      sku: null,
       slug: "",
       categoryId: "",
       productType: "in_stock",
       price: 0,
+      stock: 0,
       currency: "VND",
       priceNote: "",
       shippingNote: "",
-      stock: 0,
       sellerName: "",
       sizeDescription: "",
       packageDescription: "",
       preorderDescription: "",
+      hasVariants: false,
+      variants: [],
     },
+  });
+
+  const { fields, append, remove, replace } = useFieldArray({
+    control,
+    name: "variants",
+    keyName: "_key", // avoid clashing with your `id`
   });
 
   const name = watch("name");
   const slug = watch("slug");
+  const hasVariants = watch("hasVariants");
 
   React.useEffect(() => {
-    if (!slugTouched && name)
-      setValue("slug", slugify(name), {
-        shouldValidate: (name || "").length > 0,
-      });
+    if (!slugTouched && name) {
+      setValue("slug", slugify(name), { shouldValidate: true });
+    }
   }, [name, setValue, slugTouched]);
 
   const createMutation = useMutation({
@@ -124,50 +166,63 @@ export default function AddProductPage() {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       showToast("Product created successfully.", "success");
     },
-    onError: err => {
-      showToast(getApiErrorMessage(err), "error");
-    },
   });
 
-  const addVariant = () => {
-    setVariants(prev => [
-      ...prev,
-      {
-        id: crypto.randomUUID(),
-        name: "",
-        description: "",
-        price: "",
-        stock: "",
-      },
-    ]);
-  };
+  const onToggleMode = (_: unknown, value: "single" | "variants" | null) => {
+    if (!value) return;
 
-  const removeVariant = (index: number) => {
-    setVariants(prev => prev.filter((_, i) => i !== index));
+    const nextHasVariants = value === "variants";
+    setValue("hasVariants", nextHasVariants, { shouldValidate: true });
+
+    // keep toggle UX clean + predictable
+    clearErrors(["variants"]);
+
+    if (!nextHasVariants) {
+      // switching back to single => wipe variants
+      replace([]);
+    } else {
+      // switching to variants => reset product-level price & stock; ensure at least one row
+      setValue("price", 0, { shouldValidate: true });
+      setValue("stock", 0, { shouldValidate: true });
+      if (fields.length === 0) append(makeEmptyVariant());
+    }
   };
 
   const onSubmit = handleSubmit(async values => {
     try {
-      await createMutation.mutateAsync({
+      const hasVariants = values.hasVariants && values.variants.length > 0;
+      const variantsPayload = hasVariants
+        ? values.variants.map(v => ({
+            name: v.name,
+            description: v.description || null,
+            price: v.price,
+            stock: v.stock,
+            images: [] as string[],
+          }))
+        : [];
+
+      const payload = {
         name: values.name,
-        sku: values.sku || null,
         slug: values.slug,
         categoryId: values.categoryId,
         productType: values.productType,
-        price: values.price,
+        price: hasVariants ? null : (values.price ?? 0),
+        stock: hasVariants ? null : values.stock,
         currency: values.currency,
         priceNote: values.priceNote || null,
         shippingNote: values.shippingNote || null,
-        stock: values.stock,
         sellerName: values.sellerName,
         sizeDescription: values.sizeDescription || null,
         packageDescription: values.packageDescription || null,
         preorderDescription: values.preorderDescription || null,
         images: imageKeys,
         preorder: null,
-      });
+        variants: variantsPayload,
+      };
+
+      await createMutation.mutateAsync(payload);
     } catch {
-      // Error handled in mutation
+      // handled in mutation
     }
   });
 
@@ -189,6 +244,7 @@ export default function AddProductPage() {
               <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
                 Basic information
               </Typography>
+
               <Stack spacing={2}>
                 <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
                   <TextField
@@ -199,14 +255,7 @@ export default function AddProductPage() {
                     helperText={errors.name?.message}
                     fullWidth
                   />
-                  {/* <TextField
-                    label="SKU"
-                    placeholder="e.g. STK-001"
-                    {...register("sku")}
-                    error={!!errors.sku}
-                    helperText={errors.sku?.message}
-                    fullWidth
-                  /> */}
+
                   <TextField
                     label="Slug"
                     placeholder="sticker-pack-a"
@@ -225,6 +274,7 @@ export default function AddProductPage() {
                     fullWidth
                   />
                 </Stack>
+
                 <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
                   <FormControl fullWidth error={!!errors.categoryId}>
                     <InputLabel>Category</InputLabel>
@@ -248,6 +298,7 @@ export default function AddProductPage() {
                       {errors.categoryId?.message}
                     </FormHelperText>
                   </FormControl>
+
                   <FormControl fullWidth>
                     <InputLabel>Product type</InputLabel>
                     <Select
@@ -272,7 +323,7 @@ export default function AddProductPage() {
             </CardContent>
           </Card>
 
-          {/* Pricing, stock & variants (merged) */}
+          {/* Pricing, stock & variants */}
           <Card variant="outlined" sx={{ borderRadius: 2 }}>
             <CardContent>
               <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 1 }}>
@@ -292,20 +343,11 @@ export default function AddProductPage() {
                 <ToggleButtonGroup
                   value={hasVariants ? "variants" : "single"}
                   exclusive
-                  onChange={(_, value) => {
-                    if (value === null) return;
-                    setHasVariants(value === "variants");
-                    if (value === "single") setVariants([]);
-                  }}
-                  aria-label="Product pricing mode"
+                  onChange={onToggleMode}
                   size="small"
                 >
-                  <ToggleButton value="single" aria-label="Single product">
-                    Single product
-                  </ToggleButton>
-                  <ToggleButton value="variants" aria-label="With variants">
-                    With variants
-                  </ToggleButton>
+                  <ToggleButton value="single">Single product</ToggleButton>
+                  <ToggleButton value="variants">With variants</ToggleButton>
                 </ToggleButtonGroup>
               </Stack>
 
@@ -322,14 +364,12 @@ export default function AddProductPage() {
                   }
                   fullWidth
                   disabled={hasVariants}
-                  InputProps={{ readOnly: hasVariants }}
                 />
                 <TextField
                   label="Currency"
                   {...register("currency")}
                   fullWidth
-                  disabled={true}
-                  InputProps={{ readOnly: hasVariants }}
+                  disabled
                 />
                 <TextField
                   label="Stock"
@@ -343,9 +383,9 @@ export default function AddProductPage() {
                   }
                   fullWidth
                   disabled={hasVariants}
-                  InputProps={{ readOnly: hasVariants }}
                 />
               </Stack>
+
               <TextField
                 label="Price note"
                 placeholder="e.g. Price may vary"
@@ -370,123 +410,106 @@ export default function AddProductPage() {
                   >
                     Variant list
                   </Typography>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ mb: 2 }}
-                  >
-                    Add size/color variants with their own price and stock.
-                    Variants can be managed after the product is created.
-                  </Typography>
-                  {variants.length === 0 ? (
+
+                  {/* list-level error from superRefine */}
+                  {errors.variants?.message && (
+                    <FormHelperText error sx={{ mb: 1 }}>
+                      {errors.variants?.message}
+                    </FormHelperText>
+                  )}
+
+                  {fields.length === 0 ? (
                     <Button
                       variant="outlined"
                       startIcon={<AddRoundedIcon />}
-                      onClick={addVariant}
-                      size="medium"
+                      onClick={() => append(makeEmptyVariant())}
                     >
                       Add variant
                     </Button>
                   ) : (
                     <Stack spacing={2}>
-                      {variants.map((field, index) => (
-                        <Paper
-                          key={field.id}
-                          variant="outlined"
-                          sx={{ p: 2, borderRadius: 2 }}
-                        >
-                          <Stack
-                            direction="row"
-                            justifyContent="space-between"
-                            alignItems="center"
-                            sx={{ mb: 1.5 }}
+                      {fields.map((field, index) => {
+                        const rowErr = errors.variants?.[index];
+                        return (
+                          <Paper
+                            key={field._key}
+                            variant="outlined"
+                            sx={{ p: 2, borderRadius: 2 }}
                           >
-                            <Typography variant="subtitle2">
-                              Variant {index + 1}
-                            </Typography>
-                            <IconButton
-                              size="small"
-                              onClick={() => removeVariant(index)}
-                              aria-label="Remove variant"
+                            <Stack
+                              direction="row"
+                              justifyContent="space-between"
+                              alignItems="center"
+                              sx={{ mb: 1.5 }}
                             >
-                              <RemoveCircleOutlineRoundedIcon />
-                            </IconButton>
-                          </Stack>
-                          <Stack
-                            direction={{ xs: "column", sm: "row" }}
-                            spacing={2}
-                          >
-                            <TextField
-                              label="Variant name"
-                              placeholder="e.g. Size M"
-                              size="small"
-                              fullWidth
-                              value={field.name}
-                              onChange={e => {
-                                const next = [...variants];
-                                next[index] = {
-                                  ...next[index],
-                                  name: e.target.value,
-                                };
-                                setVariants(next);
-                              }}
-                            />
-                            <TextField
-                              label="Description"
-                              placeholder="Optional"
-                              size="small"
-                              fullWidth
-                              value={field.description}
-                              onChange={e => {
-                                const next = [...variants];
-                                next[index] = {
-                                  ...next[index],
-                                  description: e.target.value,
-                                };
-                                setVariants(next);
-                              }}
-                            />
-                            <TextField
-                              label="Price (VND)"
-                              type="number"
-                              size="small"
-                              placeholder="Required for variant"
-                              fullWidth
-                              value={field.price}
-                              onChange={e => {
-                                const next = [...variants];
-                                next[index] = {
-                                  ...next[index],
-                                  price: e.target.value,
-                                };
-                                setVariants(next);
-                              }}
-                            />
-                            <TextField
-                              label="Stock"
-                              type="number"
-                              size="small"
-                              placeholder="Required for variant"
-                              fullWidth
-                              value={field.stock}
-                              onChange={e => {
-                                const next = [...variants];
-                                next[index] = {
-                                  ...next[index],
-                                  stock: e.target.value,
-                                };
-                                setVariants(next);
-                              }}
-                            />
-                          </Stack>
-                        </Paper>
-                      ))}
+                              <Typography variant="subtitle2">
+                                Variant {index + 1}
+                              </Typography>
+                              <IconButton
+                                size="small"
+                                onClick={() => remove(index)}
+                              >
+                                <RemoveCircleOutlineRoundedIcon />
+                              </IconButton>
+                            </Stack>
+
+                            <Stack
+                              direction={{ xs: "column", sm: "row" }}
+                              spacing={2}
+                            >
+                              <TextField
+                                label="Variant name"
+                                placeholder="e.g. Size M"
+                                size="small"
+                                fullWidth
+                                {...register(`variants.${index}.name` as const)}
+                                error={!!rowErr?.name}
+                                helperText={rowErr?.name?.message}
+                              />
+
+                              <TextField
+                                label="Description"
+                                placeholder="Optional"
+                                size="small"
+                                fullWidth
+                                {...register(
+                                  `variants.${index}.description` as const
+                                )}
+                              />
+
+                              <TextField
+                                label="Price (VND)"
+                                type="number"
+                                size="small"
+                                fullWidth
+                                {...register(
+                                  `variants.${index}.price` as const
+                                )}
+                                error={!!rowErr?.price}
+                                helperText={rowErr?.price?.message}
+                              />
+
+                              <TextField
+                                label="Stock"
+                                type="number"
+                                size="small"
+                                fullWidth
+                                {...register(
+                                  `variants.${index}.stock` as const
+                                )}
+                                error={!!rowErr?.stock}
+                                helperText={rowErr?.stock?.message}
+                              />
+                            </Stack>
+                          </Paper>
+                        );
+                      })}
+
                       <Button
                         variant="outlined"
                         startIcon={<AddRoundedIcon />}
-                        onClick={addVariant}
-                        size="medium"
-                        disabled={variants.length >= 20}
+                        onClick={() => append(makeEmptyVariant())}
+                        disabled={fields.length >= 20}
                       >
                         Add another variant
                       </Button>
@@ -540,7 +563,7 @@ export default function AddProductPage() {
             </CardContent>
           </Card>
 
-          {/* Product images (presigned upload) */}
+          {/* Product images */}
           <Card variant="outlined" sx={{ borderRadius: 2 }}>
             <CardContent>
               <PresignedUploader

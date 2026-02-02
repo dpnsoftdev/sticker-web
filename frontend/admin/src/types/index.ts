@@ -24,11 +24,11 @@ export type Product = {
   slug: string;
   categoryId: string;
   productType: ProductType;
-  price: number;
+  price: number | null;
+  stock: number | null;
   currency: string;
   priceNote: string | null;
   shippingNote: string | null;
-  stock: number;
   viewCount: number;
   sellerName: string;
   sizeDescription: string | null;
@@ -50,7 +50,18 @@ export type Variant = {
   images: string[];
 };
 
+/** Variant payload when creating a product (no id, productId set by backend) */
+export type CreateVariantInput = {
+  name: string;
+  description?: string | null;
+  price?: number | null;
+  stock?: number | null;
+  images?: string[];
+};
+
 export type CreateProductBody = Omit<
   Product,
   "id" | "viewCount" | "createdAt" | "updatedAt"
->;
+> & {
+  variants?: CreateVariantInput[];
+};

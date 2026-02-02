@@ -24,9 +24,9 @@ export async function getPresignedUploadUrl(
   }>("/assets/presigned-upload", payload);
   const data = res.data?.data ?? res.data;
   return {
-    uploadUrl: data!.uploadUrl!,
-    key: data!.key!,
-    expiresIn: data!.expiresIn!,
+    uploadUrl: data.uploadUrl || "",
+    key: data.key || "",
+    expiresIn: data.expiresIn ?? 0,
   };
 }
 

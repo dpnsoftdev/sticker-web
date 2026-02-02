@@ -25,9 +25,9 @@ export const variantRepository = {
       include: { product: true },
     }),
 
-  create: async (data: Prisma.VariantUncheckedCreateInput) => prisma.variant.create({ data }),
+  create: async (data: Prisma.VariantCreateInput) => prisma.variant.create({ data }),
 
-  update: async (id: string, data: Prisma.VariantUncheckedUpdateInput) =>
+  update: async (id: string, data: Prisma.VariantUpdateInput) =>
     prisma.variant.update({
       where: { id },
       data,

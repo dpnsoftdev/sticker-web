@@ -108,12 +108,13 @@ model Product {
 
   productType         ProductType @default(in_stock) @map("product_type")
 
-  price               Int
+  price               Int? 
+  stock               Int?        
+
   currency            String      @default("VND")
   priceNote           String?     @map("price_note")
   shippingNote        String?     @map("shipping_note")
 
-  stock               Int         @default(0)
   viewCount           Int         @default(0) @map("view_count")
 
   sellerName          String      @map("seller_name")

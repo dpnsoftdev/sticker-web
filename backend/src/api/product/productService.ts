@@ -1,8 +1,10 @@
 // src/api/product/productService.ts
+import type { Prisma } from "@prisma/client";
 import { StatusCodes } from "http-status-codes";
 import { ServiceResponse } from "@/common/models/serviceResponse";
 import { assetService } from "@/api/assets/assetService";
 import { productRepository } from "./productRepository";
+import { variantRepository } from "@/api/variant/variantRepository";
 import { ProductListQuery } from "./productModel";
 
 export const productService = {
@@ -21,11 +23,32 @@ export const productService = {
   },
 
   create: async (data: any) => {
-    const images = Array.isArray(data.images) ? data.images : [];
+    const { variants, categoryId, ...productData } = data;
+    const images = Array.isArray(productData.images) ? productData.images : [];
     const resolvedImages = await assetService.moveTmpKeysToProducts(images);
-    const payload = { ...data, images: resolvedImages };
+    const payload: Prisma.ProductCreateInput = {
+      ...productData,
+      images: resolvedImages,
+      category: { connect: { id: categoryId } },
+    };
     const product = await productRepository.create(payload);
-    return ServiceResponse.success("Product created", product, StatusCodes.CREATED);
+
+    if (variants?.length) {
+      for (const v of variants) {
+        const variantPayload: Prisma.VariantCreateInput = {
+          product: { connect: { id: product.id } },
+          name: v.name,
+          description: v.description ?? null,
+          price: v.price ?? null,
+          stock: v.stock ?? null,
+          images: v.images ?? [],
+        };
+        await variantRepository.create(variantPayload);
+      }
+    }
+
+    const productWithVariants = await productRepository.findById(product.id);
+    return ServiceResponse.success("Product created", productWithVariants!, StatusCodes.CREATED);
   },
 
   update: async (id: string, data: any) => {

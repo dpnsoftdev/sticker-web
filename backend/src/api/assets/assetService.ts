@@ -11,6 +11,7 @@ import { env } from "@/common/utils/envConfig";
 import type { DirectUploadResponse, PresignedUploadBody, PresignedUploadResponse } from "./assetModel";
 import { createS3Client } from "@/common/utils/s3";
 import { S3_PREFIX_FOLDERS } from "@/common/constants";
+import { AppError } from "@/common/middleware/errorHandler";
 
 export const assetService = {
   getPresignedUploadUrl: async (
@@ -127,21 +128,26 @@ export const assetService = {
    * Returns the final list of keys to store in the product.
    */
   moveTmpKeysToProducts: async (keys: string[]): Promise<string[]> => {
-    if (!env.S3_BUCKET || !keys.length) {
-      return keys;
-    }
-    const result: string[] = [];
-    for (const key of keys) {
-      const normalized = key.startsWith("/") ? key.slice(1) : key;
-      if (normalized.startsWith(`${S3_PREFIX_FOLDERS.TMP}/`)) {
-        const basename = path.basename(normalized);
-        const destKey = `${S3_PREFIX_FOLDERS.PRODUCTS}/${basename}`;
-        await assetService.moveObject(normalized, destKey);
-        result.push(destKey);
-      } else {
-        result.push(normalized);
+    try {
+      if (!env.S3_BUCKET || !keys.length) {
+        return keys;
       }
+      const result: string[] = [];
+      for (const key of keys) {
+        const normalized = key.startsWith("/") ? key.slice(1) : key;
+        if (normalized.startsWith(`${S3_PREFIX_FOLDERS.TMP}/`)) {
+          const basename = path.basename(normalized);
+          const destKey = `${S3_PREFIX_FOLDERS.PRODUCTS}/${basename}`;
+          await assetService.moveObject(normalized, destKey);
+          result.push(destKey);
+        } else {
+          result.push(normalized);
+        }
+      }
+      return result;
+    } catch (error) {
+      console.error("Error moving tmp keys to products:", error);
+      throw new AppError("Error moving tmp keys to products");
     }
-    return result;
   },
 };

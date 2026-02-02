@@ -6,12 +6,7 @@ import helmet from "helmet";
 import { pino } from "pino";
 
 import { openAPIRouter } from "@/api-docs/openAPIRouter";
-import { healthCheckRouter } from "@/api/healthCheck/healthCheckRouter";
-import { userRouter } from "@/api/user/userRouter";
-import { productRouter } from "@/api/product/productRouter";
-import { categoryRouter } from "@/api/category/categoryRouter";
-import { variantRouter } from "@/api/variant/variantRouter";
-import { assetRouter } from "@/api/assets/assetRouter";
+import { apiRouter } from "@/api";
 
 import errorHandler from "@/common/middleware/errorHandler";
 import rateLimiter from "@/common/middleware/rateLimiter";
@@ -36,17 +31,12 @@ app.use(rateLimiter);
 app.use(requestLogger);
 
 // Routes
-app.use("/health-check", healthCheckRouter);
-app.use("/users", userRouter);
-app.use("/products", productRouter);
-app.use("/categories", categoryRouter);
-app.use("/variants", variantRouter);
-app.use("/assets", assetRouter);
+app.use(apiRouter);
 
 // Swagger UI
 app.use(openAPIRouter);
 
-// Error handlers
+// Error handlers wrapper around all routes
 app.use(errorHandler());
 
 // Start server

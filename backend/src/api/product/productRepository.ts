@@ -32,9 +32,9 @@ export const productRepository = {
       include: { variants: true },
     }),
 
-  create: async (data: Prisma.ProductUncheckedCreateInput) => prisma.product.create({ data }),
+  create: async (data: Prisma.ProductCreateInput) => prisma.product.create({ data }),
 
-  update: async (id: string, data: Prisma.ProductUncheckedUpdateInput) =>
+  update: async (id: string, data: Prisma.ProductUpdateInput) =>
     prisma.product.update({
       where: { id },
       data,

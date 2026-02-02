@@ -24,7 +24,6 @@ import type { Category } from "@types";
 
 import { createCategory, fetchCategories } from "@apis/category.api";
 import useToastStore, { type ToastState } from "@stores/toastStore";
-import { getApiErrorMessage } from "@utils";
 
 import CategoryFormDialog, {
   type CategoryFormSubmitPayload,
@@ -62,9 +61,6 @@ export default function CategoriesPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY.categories });
       showToast("Category created successfully.", "success");
-    },
-    onError: err => {
-      showToast(getApiErrorMessage(err), "error");
     },
   });
 

@@ -49,3 +49,5 @@ export const ListVariantSchema = z.object({
 });
 
 export type Variant = z.infer<typeof VariantSchema>;
+
+export type CreateVariantBody = z.infer<typeof CreateVariantSchema>["body"];
