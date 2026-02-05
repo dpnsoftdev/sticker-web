@@ -23,7 +23,6 @@ import {
   Typography,
 } from "@mui/material";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Category } from "@types";
 import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -31,10 +30,13 @@ import { fetchCategories } from "@apis/category.api";
 import { createProduct } from "@apis/product.api";
 import PresignedUploader from "@components/common/presigned-uploader";
 import useToastStore, { type ToastState } from "@stores/toastStore";
+import type { Category } from "@types";
 import { slugify } from "@utils";
 
 const MAX_PRODUCT_IMAGES = 10;
+const MAX_VARIANT_IMAGES = 5;
 const MAX_FILE_SIZE_MB = 5;
+const MIN_IMAGES_REQUIRED = 2;
 
 const variantSchema = z.object({
   id: z.string(),
@@ -107,6 +109,9 @@ export default function AddProductPage() {
 
   const [slugTouched, setSlugTouched] = React.useState(false);
   const [imageKeys, setImageKeys] = React.useState<string[]>([]);
+  const [variantImageKeys, setVariantImageKeys] = React.useState<
+    Record<string, string[]>
+  >({});
 
   const { data: categories = [] } = useQuery({
     queryKey: QUERY_KEY.categories,
@@ -178,8 +183,9 @@ export default function AddProductPage() {
     clearErrors(["variants"]);
 
     if (!nextHasVariants) {
-      // switching back to single => wipe variants
+      // switching back to single => wipe variants and their image state
       replace([]);
+      setVariantImageKeys({});
     } else {
       // switching to variants => reset product-level price & stock; ensure at least one row
       setValue("price", 0, { shouldValidate: true });
@@ -191,13 +197,36 @@ export default function AddProductPage() {
   const onSubmit = handleSubmit(async values => {
     try {
       const hasVariants = values.hasVariants && values.variants.length > 0;
+
+      if (!hasVariants) {
+        if (imageKeys.length < MIN_IMAGES_REQUIRED) {
+          showToast(
+            "Please upload at least 2 product images when not using variants.",
+            "error"
+          );
+          return;
+        }
+      } else {
+        const variantIds = values.variants.map(v => v.id);
+        const missing = variantIds.find(
+          id => (variantImageKeys[id] ?? []).length < MIN_IMAGES_REQUIRED
+        );
+        if (missing !== undefined) {
+          showToast(
+            "Each variant must have at least 2 images. Please upload images for all variants.",
+            "error"
+          );
+          return;
+        }
+      }
+
       const variantsPayload = hasVariants
         ? values.variants.map(v => ({
             name: v.name,
             description: v.description || null,
             price: v.price,
             stock: v.stock,
-            images: [] as string[],
+            images: variantImageKeys[v.id] ?? [],
           }))
         : [];
 
@@ -355,6 +384,7 @@ export default function AddProductPage() {
                 <TextField
                   label="Price (VND)"
                   type="number"
+                  slotProps={{ htmlInput: { min: 0 } }}
                   {...register("price")}
                   error={!!errors.price}
                   helperText={
@@ -374,6 +404,7 @@ export default function AddProductPage() {
                 <TextField
                   label="Stock"
                   type="number"
+                  slotProps={{ htmlInput: { min: 0 } }}
                   {...register("stock")}
                   error={!!errors.stock}
                   helperText={
@@ -447,7 +478,15 @@ export default function AddProductPage() {
                               </Typography>
                               <IconButton
                                 size="small"
-                                onClick={() => remove(index)}
+                                onClick={() => {
+                                  const id = fields[index].id;
+                                  remove(index);
+                                  setVariantImageKeys(prev => {
+                                    const next = { ...prev };
+                                    delete next[id];
+                                    return next;
+                                  });
+                                }}
                               >
                                 <RemoveCircleOutlineRoundedIcon />
                               </IconButton>
@@ -482,6 +521,7 @@ export default function AddProductPage() {
                                 type="number"
                                 size="small"
                                 fullWidth
+                                slotProps={{ htmlInput: { min: 0 } }}
                                 {...register(
                                   `variants.${index}.price` as const
                                 )}
@@ -494,6 +534,7 @@ export default function AddProductPage() {
                                 type="number"
                                 size="small"
                                 fullWidth
+                                slotProps={{ htmlInput: { min: 0 } }}
                                 {...register(
                                   `variants.${index}.stock` as const
                                 )}
@@ -501,6 +542,24 @@ export default function AddProductPage() {
                                 helperText={rowErr?.stock?.message}
                               />
                             </Stack>
+
+                            <Box sx={{ mt: 2 }}>
+                              <PresignedUploader
+                                value={variantImageKeys[field.id] ?? []}
+                                onChange={keys =>
+                                  setVariantImageKeys(prev => ({
+                                    ...prev,
+                                    [field.id]: keys,
+                                  }))
+                                }
+                                maxFiles={MAX_VARIANT_IMAGES}
+                                maxFileSizeMb={MAX_FILE_SIZE_MB}
+                                label="Variant images"
+                                helperText={`At least ${MIN_IMAGES_REQUIRED} images (max ${MAX_VARIANT_IMAGES}, ${MAX_FILE_SIZE_MB}MB each)`}
+                                buttonLabel="Upload variant images"
+                                previewSize={72}
+                              />
+                            </Box>
                           </Paper>
                         );
                       })}

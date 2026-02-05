@@ -123,31 +123,37 @@ export const assetService = {
   },
 
   /**
-   * For each key that starts with "tmp/", move the object to "products/" (same basename).
-   * Keys already under "products/" or other prefixes are returned unchanged.
-   * Returns the final list of keys to store in the product.
+   * Move objects to a folder within the same bucket. Returns the destination keys.
    */
-  moveTmpKeysToProducts: async (keys: string[]): Promise<string[]> => {
+  moveTmpKeysToFolder: async (keys: string[], targetFolder: string): Promise<string[]> => {
     try {
-      if (!env.S3_BUCKET || !keys.length) {
-        return keys;
-      }
+      if (!env.S3_BUCKET || !Array.isArray(keys) || keys.length === 0) return keys ?? [];
+
+      const tmpPrefix = `${S3_PREFIX_FOLDERS.TMP}/`;
+      const normalize = (k: string) => (k.startsWith("/") ? k.slice(1) : k);
+
       const result: string[] = [];
-      for (const key of keys) {
-        const normalized = key.startsWith("/") ? key.slice(1) : key;
-        if (normalized.startsWith(`${S3_PREFIX_FOLDERS.TMP}/`)) {
-          const basename = path.basename(normalized);
-          const destKey = `${S3_PREFIX_FOLDERS.PRODUCTS}/${basename}`;
-          await assetService.moveObject(normalized, destKey);
-          result.push(destKey);
-        } else {
+
+      for (const rawKey of keys) {
+        const normalized = normalize(rawKey);
+
+        // not a tmp key => keep as-is
+        if (!normalized.startsWith(tmpPrefix)) {
           result.push(normalized);
+          continue;
         }
+
+        const basename = path.posix.basename(normalized); // S3 keys use posix paths
+        const destKey = `${targetFolder}/${basename}`.replace(/\/+/g, "/");
+
+        await assetService.moveObject(normalized, destKey);
+        result.push(destKey);
       }
+
       return result;
     } catch (error) {
-      console.error("Error moving tmp keys to products:", error);
-      throw new AppError("Error moving tmp keys to products");
+      console.error("Error moving tmp keys:", error);
+      throw new AppError("Error moving images");
     }
   },
 };
