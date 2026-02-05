@@ -57,23 +57,31 @@ export const productService = {
       },
     );
 
-    if (productImages.length > 0) {
-      const targetFolder = `${S3_PREFIX_FOLDERS.PRODUCTS}/${product.id}`;
-      const resolvedProductImages = await assetService.moveTmpKeysToFolder(productImages, targetFolder);
-      await productRepository.update(product.id, { images: resolvedProductImages });
-    }
+    try {
+      if (productImages.length > 0) {
+        const targetFolder = `${S3_PREFIX_FOLDERS.PRODUCTS}/${product.id}`;
+        const resolvedProductImages = await assetService.moveTmpKeysToFolder(productImages, targetFolder);
+        await productRepository.update(product.id, { images: resolvedProductImages });
+      }
 
-    if (createdVariants.length > 0 && Array.isArray(variants)) {
-      const targetFolder = `${S3_PREFIX_FOLDERS.PRODUCTS}/${product.id}/variants`;
-      for (let i = 0; i < createdVariants.length; i++) {
-        const variantImages = variants[i]?.images;
-        if (Array.isArray(variantImages) && variantImages.length > 0) {
-          const resolvedVariantImages = await assetService.moveTmpKeysToFolder(variantImages, targetFolder);
-          await variantRepository.update(createdVariants[i].id, {
-            images: resolvedVariantImages,
-          });
+      if (createdVariants.length > 0 && Array.isArray(variants)) {
+        const targetFolder = `${S3_PREFIX_FOLDERS.PRODUCTS}/${product.id}/variants`;
+        for (let i = 0; i < createdVariants.length; i++) {
+          const variantImages = variants[i]?.images;
+          if (Array.isArray(variantImages) && variantImages.length > 0) {
+            const resolvedVariantImages = await assetService.moveTmpKeysToFolder(variantImages, targetFolder);
+            await variantRepository.update(createdVariants[i].id, {
+              images: resolvedVariantImages,
+            });
+          }
         }
       }
+    } catch {
+      await prisma.$transaction(async (tx) => {
+        await tx.variant.deleteMany({ where: { productId: product.id } });
+        await tx.product.delete({ where: { id: product.id } });
+      });
+      return ServiceResponse.failure("Image upload failed", null, StatusCodes.INTERNAL_SERVER_ERROR);
     }
 
     const newProduct = await productRepository.findById(product.id);

@@ -93,7 +93,7 @@ export type ProductFormValues = z.infer<typeof productSchema>;
 
 const QUERY_KEY = { categories: ["categories"] as const };
 
-function makeEmptyVariant() {
+const makeEmptyVariant = () => {
   return {
     id: crypto.randomUUID(),
     name: "",
@@ -101,7 +101,25 @@ function makeEmptyVariant() {
     price: 0,
     stock: 0,
   };
-}
+};
+
+const defaultFormValues: ProductFormValues = {
+  name: "",
+  slug: "",
+  categoryId: "",
+  productType: "in_stock",
+  price: 0,
+  stock: 0,
+  currency: "VND",
+  priceNote: "",
+  shippingNote: "",
+  sellerName: "",
+  sizeDescription: "",
+  packageDescription: "",
+  preorderDescription: "",
+  hasVariants: false,
+  variants: [],
+};
 
 export default function AddProductPage() {
   const queryClient = useQueryClient();
@@ -125,27 +143,12 @@ export default function AddProductPage() {
     handleSubmit,
     watch,
     setValue,
+    reset,
     formState: { errors, isSubmitting },
     clearErrors,
   } = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
-    defaultValues: {
-      name: "",
-      slug: "",
-      categoryId: "",
-      productType: "in_stock",
-      price: 0,
-      stock: 0,
-      currency: "VND",
-      priceNote: "",
-      shippingNote: "",
-      sellerName: "",
-      sizeDescription: "",
-      packageDescription: "",
-      preorderDescription: "",
-      hasVariants: false,
-      variants: [],
-    },
+    defaultValues: defaultFormValues,
   });
 
   const { fields, append, remove, replace } = useFieldArray({
@@ -170,8 +173,17 @@ export default function AddProductPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       showToast("Product created successfully.", "success");
+      resetForm();
     },
   });
+
+  const resetForm = () => {
+    reset(defaultFormValues);
+    replace([]);
+    setImageKeys([]);
+    setVariantImageKeys({});
+    setSlugTouched(false);
+  };
 
   const onToggleMode = (_: unknown, value: "single" | "variants" | null) => {
     if (!value) return;

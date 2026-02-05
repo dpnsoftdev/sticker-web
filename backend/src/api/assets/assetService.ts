@@ -1,5 +1,5 @@
 // src/api/assets/assetService.ts
-import { CopyObjectCommand, DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import { CopyObjectCommand, DeleteObjectCommand, HeadObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { randomUUID } from "node:crypto";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { StatusCodes } from "http-status-codes";
@@ -102,6 +102,35 @@ export const assetService = {
       }),
     );
     return { key: destKey };
+  },
+
+  /**
+   * Check if an object exists in S3. Throws AppError if not found.
+   */
+  checkObjectExists: async (key: string): Promise<void> => {
+    if (!env.S3_BUCKET) {
+      throw new Error("S3 upload is not configured (S3_BUCKET missing)");
+    }
+    const client = createS3Client();
+    try {
+      await client.send(
+        new HeadObjectCommand({
+          Bucket: env.S3_BUCKET,
+          Key: key,
+        }),
+      );
+    } catch (err: unknown) {
+      const isNotFound =
+        err && typeof err === "object" && "name" in err && (err as { name?: string }).name === "NotFound";
+      const statusCode =
+        err && typeof err === "object" && "$metadata" in err
+          ? (err as { $metadata?: { httpStatusCode?: number } }).$metadata?.httpStatusCode
+          : undefined;
+      if (isNotFound || statusCode === 404) {
+        throw new AppError(`Image not found: ${key}`);
+      }
+      throw err;
+    }
   },
 
   /**

@@ -171,7 +171,6 @@ export default function PresignedUploader({
         ref={inputRef}
         type="file"
         accept={accept}
-        multiple
         hidden
         onChange={handleInputChange}
       />
