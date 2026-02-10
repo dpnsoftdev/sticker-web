@@ -269,9 +269,6 @@ export default function AddProductPage() {
 
   return (
     <Box>
-      <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
-        Add Product
-      </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
         Fill in the product information below. Images are uploaded via presigned
         URL.
