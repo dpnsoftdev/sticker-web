@@ -9,19 +9,19 @@ const productTypeEnum = z.enum(["in_stock", "preorder"]);
 
 export const ProductSchema = z.object({
   id: z.string().uuid(),
-  sku: z.string(),
   name: z.string(),
   slug: z.string(),
 
   categoryId: z.string().uuid(),
   productType: productTypeEnum.default("in_stock"),
 
-  price: z.number().int(),
+  price: z.number().int().nullable(),
+  stock: z.number().int().default(0).nullable(),
+
   currency: z.string().default("VND"),
   priceNote: z.string().nullable(),
   shippingNote: z.string().nullable(),
 
-  stock: z.number().int().default(0),
   viewCount: z.number().int().default(0),
 
   sellerName: z.string(),
@@ -37,8 +37,19 @@ export const ProductSchema = z.object({
 });
 
 /* =======================
-  Requests
+  Create product with optional variants
 ======================= */
+
+/** Variant payload when creating a product (no id, productId set by server) */
+export const CreateVariantInputSchema = z.object({
+  name: z.string(),
+  description: z.string().nullable().optional(),
+  price: z.number().int().nullable().optional(),
+  stock: z.number().int().nullable().optional(),
+  images: z.array(z.string()).default([]),
+});
+
+export type CreateVariantInput = z.infer<typeof CreateVariantInputSchema>;
 
 export const CreateProductSchema = z.object({
   body: ProductSchema.omit({
@@ -46,6 +57,8 @@ export const CreateProductSchema = z.object({
     viewCount: true,
     createdAt: true,
     updatedAt: true,
+  }).extend({
+    variants: z.array(CreateVariantInputSchema).optional(),
   }),
 });
 

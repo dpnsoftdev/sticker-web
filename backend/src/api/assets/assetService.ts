@@ -1,5 +1,5 @@
 // src/api/assets/assetService.ts
-import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { CopyObjectCommand, DeleteObjectCommand, HeadObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { randomUUID } from "node:crypto";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { StatusCodes } from "http-status-codes";
@@ -10,6 +10,8 @@ import { env } from "@/common/utils/envConfig";
 
 import type { DirectUploadResponse, PresignedUploadBody, PresignedUploadResponse } from "./assetModel";
 import { createS3Client } from "@/common/utils/s3";
+import { S3_PREFIX_FOLDERS } from "@/common/constants";
+import { AppError } from "@/common/middleware/errorHandler";
 
 export const assetService = {
   getPresignedUploadUrl: async (
@@ -82,5 +84,105 @@ export const assetService = {
       key,
       message: "Use this key to reference the file (e.g. build public URL).",
     });
+  },
+
+  /**
+   * Copy an object within the same bucket. Returns the destination key.
+   */
+  copyObject: async (sourceKey: string, destKey: string): Promise<{ key: string }> => {
+    if (!env.S3_BUCKET) {
+      throw new Error("S3 upload is not configured (S3_BUCKET missing)");
+    }
+    const client = createS3Client();
+    await client.send(
+      new CopyObjectCommand({
+        Bucket: env.S3_BUCKET,
+        CopySource: `${env.S3_BUCKET}/${sourceKey}`,
+        Key: destKey,
+      }),
+    );
+    return { key: destKey };
+  },
+
+  /**
+   * Check if an object exists in S3. Throws AppError if not found.
+   */
+  checkObjectExists: async (key: string): Promise<void> => {
+    if (!env.S3_BUCKET) {
+      throw new Error("S3 upload is not configured (S3_BUCKET missing)");
+    }
+    const client = createS3Client();
+    try {
+      await client.send(
+        new HeadObjectCommand({
+          Bucket: env.S3_BUCKET,
+          Key: key,
+        }),
+      );
+    } catch (err: unknown) {
+      const isNotFound =
+        err && typeof err === "object" && "name" in err && (err as { name?: string }).name === "NotFound";
+      const statusCode =
+        err && typeof err === "object" && "$metadata" in err
+          ? (err as { $metadata?: { httpStatusCode?: number } }).$metadata?.httpStatusCode
+          : undefined;
+      if (isNotFound || statusCode === 404) {
+        throw new AppError(`Image not found: ${key}`);
+      }
+      throw err;
+    }
+  },
+
+  /**
+   * Move an object within the same bucket (copy then delete). Returns the destination key.
+   */
+  moveObject: async (sourceKey: string, destKey: string): Promise<{ key: string }> => {
+    await assetService.copyObject(sourceKey, destKey);
+    if (!env.S3_BUCKET) {
+      throw new Error("S3 upload is not configured (S3_BUCKET missing)");
+    }
+    const client = createS3Client();
+    await client.send(
+      new DeleteObjectCommand({
+        Bucket: env.S3_BUCKET,
+        Key: sourceKey,
+      }),
+    );
+    return { key: destKey };
+  },
+
+  /**
+   * Move objects to a folder within the same bucket. Returns the destination keys.
+   */
+  moveTmpKeysToFolder: async (keys: string[], targetFolder: string): Promise<string[]> => {
+    try {
+      if (!env.S3_BUCKET || !Array.isArray(keys) || keys.length === 0) return keys ?? [];
+
+      const tmpPrefix = `${S3_PREFIX_FOLDERS.TMP}/`;
+      const normalize = (k: string) => (k.startsWith("/") ? k.slice(1) : k);
+
+      const result: string[] = [];
+
+      for (const rawKey of keys) {
+        const normalized = normalize(rawKey);
+
+        // not a tmp key => keep as-is
+        if (!normalized.startsWith(tmpPrefix)) {
+          result.push(normalized);
+          continue;
+        }
+
+        const basename = path.posix.basename(normalized); // S3 keys use posix paths
+        const destKey = `${targetFolder}/${basename}`.replace(/\/+/g, "/");
+
+        await assetService.moveObject(normalized, destKey);
+        result.push(destKey);
+      }
+
+      return result;
+    } catch (error) {
+      console.error("Error moving tmp keys:", error);
+      throw new AppError("Error moving images");
+    }
   },
 };

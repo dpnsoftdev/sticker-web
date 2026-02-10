@@ -5,7 +5,7 @@
 An **order / pre-order** store application focused on handmade / collectible products, supporting:
 
 - **In-stock** and **pre-order** products
-- **Categories / Variants** with unique SKUs
+- **Categories / Variants**
 - **Campaigns** for pre-order and flash sale
 - **Promotions** with discount codes
 - Checkout collecting **contact and shipping information**
@@ -49,7 +49,7 @@ An **order / pre-order** store application focused on handmade / collectible pro
   - `product_id` + `variant_id` (optional)
   - `quantity`
 - Display cart items:
-  - Image, SKU, product name, variant name, quantity, price
+  - Image, product name, variant name, quantity, price
   - Show campaign price if the product is in a campaign
 - Allow users to:
   - Increase / decrease quantity
@@ -145,7 +145,7 @@ An **order / pre-order** store application focused on handmade / collectible pro
 ### 4.3 Product Management
 
 - CRUD products:
-  - `sku` (unique), name, slug, category_id
+  - name, slug, category_id
   - `product_type` (`in_stock | preorder`)
   - price, currency, price_note, shipping_note
   - stock, seller_name
@@ -159,7 +159,7 @@ An **order / pre-order** store application focused on handmade / collectible pro
 ### 4.4 Variant Management
 
 - CRUD variants per product:
-  - `sku` (unique), name, description
+  - name, description
   - Override price (optional)
   - Override stock (optional)
   - Images (optional)
@@ -232,7 +232,6 @@ An **order / pre-order** store application focused on handmade / collectible pro
 
 ### 5.1 Product
 
-- `sku` must be unique system-wide
 - `product_type` enum: `in_stock | preorder` (default: in_stock)
 - `in_stock` ⇒ `preorder = null` (recommended)
 - `preorder` ⇒ `preorder.start_date` and `preorder.end_date` are required
@@ -241,7 +240,6 @@ An **order / pre-order** store application focused on handmade / collectible pro
 
 ### 5.2 Variant
 
-- `sku` must be unique system-wide
 - Each variant belongs to exactly one product (`product_id`)
 - Can override `price` and `stock` (nullable)
 - If `variant.price` is null ⇒ use product price
@@ -340,18 +338,6 @@ An **order / pre-order** store application focused on handmade / collectible pro
   - Payment confirmed
   - Shipping updates
   - Order delivered
-
-### 6.3 SKU Management
-
-- SKU format: customizable (e.g. `PRD-XXX-001`, `VAR-XXX-001`)
-- SKU must be unique system-wide
-- Can be auto-generated or manually entered
-- SKU is displayed in:
-  - Product detail page
-  - Variant selection
-  - Cart
-  - Order detail
-  - Admin management
 
 ---
 

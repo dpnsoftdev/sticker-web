@@ -2,7 +2,8 @@ import { ORDER_STATUS, PAYMENT_PLAN, PAYMENT_METHOD } from "@/lib/constants";
 
 export type OrderStatus = (typeof ORDER_STATUS)[keyof typeof ORDER_STATUS];
 export type PaymentPlan = (typeof PAYMENT_PLAN)[keyof typeof PAYMENT_PLAN];
-export type PaymentMethod = (typeof PAYMENT_METHOD)[keyof typeof PAYMENT_METHOD];
+export type PaymentMethod =
+  (typeof PAYMENT_METHOD)[keyof typeof PAYMENT_METHOD];
 
 export interface OrderItem {
   product_id: string;
@@ -11,7 +12,6 @@ export interface OrderItem {
   price: number;
   product_name: string;
   variant_name: string | null;
-  sku: string;
 }
 
 export interface Order {

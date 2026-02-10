@@ -13,7 +13,6 @@ export const HOME_CATEGORIES: CategoryListResponse[] = [
     products: [
       {
         id: "prd_001",
-        sku: "DOLL-SEONGHYEON",
         name: "[SEONGHYEON] Yom Miomiao",
         slug: "seonghyeon-yom-miomiao",
         category_id: "cat_doll",
@@ -38,7 +37,6 @@ export const HOME_CATEGORIES: CategoryListResponse[] = [
       },
       {
         id: "prd_002",
-        sku: "DOLL-NIKI",
         name: "[NI-KI] Doll Outfit",
         slug: "niki-doll-outfit",
         category_id: "cat_doll",
@@ -72,7 +70,6 @@ export const HOME_CATEGORIES: CategoryListResponse[] = [
     products: [
       {
         id: "prd_010",
-        sku: "CORTIS-STICKER",
         name: "[CORTIS] Sticker trong suốt",
         slug: "cortis-sticker-trong-suot",
         category_id: "cat_merch",
@@ -106,7 +103,6 @@ export const HOME_CATEGORIES: CategoryListResponse[] = [
     products: [
       {
         id: "prd_020",
-        sku: "CUSTOM-ORDER",
         name: "Order theo yêu cầu",
         slug: "order-theo-yeu-cau",
         category_id: "cat_other",

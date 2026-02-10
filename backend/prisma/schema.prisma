@@ -100,7 +100,6 @@ model Category {
 
 model Product {
   id                  String      @id @default(uuid())
-  sku                 String      @unique
   name                String
   slug                String      @unique
 
@@ -109,12 +108,13 @@ model Product {
 
   productType         ProductType @default(in_stock) @map("product_type")
 
-  price               Int
+  price               Int? 
+  stock               Int?        
+
   currency            String      @default("VND")
   priceNote           String?     @map("price_note")
   shippingNote        String?     @map("shipping_note")
 
-  stock               Int         @default(0)
   viewCount           Int         @default(0) @map("view_count")
 
   sellerName          String      @map("seller_name")
@@ -142,7 +142,6 @@ model Product {
 
 model Variant {
   id          String   @id @default(uuid())
-  sku         String   @unique
 
   productId   String   @map("product_id")
   product     Product  @relation(fields: [productId], references: [id])

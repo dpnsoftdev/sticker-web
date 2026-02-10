@@ -5,7 +5,7 @@ import { handleServiceResponse } from "@/common/utils/httpHandlers";
 
 export const productController = {
   getListProducts: async (req: Request, res: Response) => {
-    const response = await productService.list(req.query);
+    const response = await productService.list(req.query as any);
     handleServiceResponse(response, res);
   },
 

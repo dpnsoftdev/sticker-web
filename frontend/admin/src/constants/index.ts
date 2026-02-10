@@ -31,3 +31,12 @@ export const ROLES_NAME = {
   USER: "user",
   ACCESS_ALL: "*",
 };
+
+export const DEFAULT_MAX_FILE_SIZE_MB = 5;
+export const DEFAULT_MAX_FILES = 10;
+export const DEFAULT_ACCEPT = "image/jpeg,image/png,image/gif,image/webp";
+export const DEFAULT_PREFIX = "tmp";
+
+export const PRODUCTS_PREFIX = "products";
+export const CATEGORIES_PREFIX = "categories";
+export const MAX_PRODUCT_IMAGES = 10;

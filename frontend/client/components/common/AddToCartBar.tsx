@@ -42,7 +42,6 @@ export default function AddToCartBar({
       quantity: quantity,
       productName: product.name,
       variantName: selectedVariant?.name ?? undefined,
-      sku: selectedVariant?.sku ?? product.sku ?? undefined,
       price: finalPrice,
       campaignPrice: undefined, // Set if you have campaign pricing logic
       image: getProductImage(product, selectedVariant),

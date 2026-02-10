@@ -13,5 +13,5 @@ export const categoryRepository = {
       where: { slug },
     }),
 
-  create: async (data: Prisma.CategoryUncheckedCreateInput) => prisma.category.create({ data }),
+  create: async (data: Prisma.CategoryCreateInput) => prisma.category.create({ data }),
 };

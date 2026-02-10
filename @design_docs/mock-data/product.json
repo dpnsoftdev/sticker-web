@@ -1,15 +1,14 @@
 {
   "id": "9c8f3c6a-2d41-4c9e-9f65-1c8e1b6a0a01",
-  "sku": "PRD-OUTFIT-THO-DAU-001", // required, unique, Stock Keeping Unit
   "name": "Outfit Thỏ Dâu Cương Thi 💜", // required
   "slug": "outfit-tho-dau-cuong-thi", // required
   "category_id": "cat-101", // required, default Uncategorized
   "product_type": "in_stock", // required, default in_stock, enum: in_stock | preorder
-  "price": 157000, // required
+  "price": 157000, // optional when has_variants, default null
+  "stock": 79, // optional when has_variants, default null
 	"currency": "VND", // default VND
 	"price_note": "Chưa full phí", // optional
   "shipping_note": "Chưa bao gồm ship nội địa 23.5k", // optional
-  "stock": 79, // required, default 0
 	"view_count": 90, // default 90
   "seller_name": "宇宙大売蛙", // required
 	"size_description": "10cm, vòng đầu <= 23cm", // optional

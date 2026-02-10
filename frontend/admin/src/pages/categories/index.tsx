@@ -33,16 +33,6 @@ const QUERY_KEY = {
   categories: ["categories"] as const,
 };
 
-function getErrorMessage(error: unknown): string {
-  if (error && typeof error === "object" && "response" in error) {
-    const res = (error as { response?: { data?: { message?: string } } })
-      .response;
-    if (res?.data?.message) return res.data.message;
-  }
-  if (error instanceof Error) return error.message;
-  return "Something went wrong. Please try again.";
-}
-
 export default function CategoriesPage() {
   const queryClient = useQueryClient();
   const showToast = useToastStore((state: ToastState) => state.showToast);
@@ -71,9 +61,6 @@ export default function CategoriesPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY.categories });
       showToast("Category created successfully.", "success");
-    },
-    onError: err => {
-      showToast(getErrorMessage(err), "error");
     },
   });
 

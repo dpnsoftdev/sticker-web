@@ -159,7 +159,7 @@ function CartLineItem({
     <div className="rounded-2xl border border-border bg-card p-3">
       <div className="flex items-start gap-4">
         <Link
-          href={`/products/${item.sku ?? item.productId}`}
+          href={`/products/${item.productId}`}
           onClick={onNavigate}
           className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-border"
           aria-label={item.productName ?? "Sản phẩm"}

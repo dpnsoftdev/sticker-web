@@ -8,6 +8,7 @@ import {
 
 import { ROLES_NAME, ROUTES_APP } from "@constants";
 import AccountPage from "@pages/account";
+import AddProductPage from "@pages/add-product";
 import CategoriesPage from "@pages/categories";
 import ErrorPage from "@pages/error";
 import ForgotPasswordPage from "@pages/forgot-password";
@@ -80,7 +81,7 @@ const AppRouter = () => {
             { path: ROUTES_APP.CATEGORIES, element: <CategoriesPage /> },
             { path: "/transactions", element: <EmptyPage /> },
             { path: "/brands", element: <EmptyPage /> },
-            { path: "/products/new", element: <EmptyPage /> },
+            { path: "/products/new", element: <AddProductPage /> },
             { path: "/products", element: <EmptyPage /> },
             { path: "/admins", element: <EmptyPage /> },
             { path: "/admin-roles", element: <EmptyPage /> },

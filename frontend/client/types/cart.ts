@@ -5,7 +5,6 @@ export interface CartItem {
   quantity: number;
   productName?: string;
   variantName?: string;
-  sku?: string;
   price?: number;
   campaignPrice?: number;
   image?: string;

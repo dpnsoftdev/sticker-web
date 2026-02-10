@@ -50,7 +50,6 @@ erDiagram
 
     PRODUCT {
         string id PK
-        string sku UK
         string name
         string slug UK
         string category_id FK
@@ -71,7 +70,6 @@ erDiagram
 
     VARIANT {
         string id PK
-        string sku UK
         string product_id FK
         string name
         string description

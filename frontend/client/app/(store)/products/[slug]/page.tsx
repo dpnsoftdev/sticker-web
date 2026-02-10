@@ -13,7 +13,6 @@ async function getProductBySlug(slug: string): Promise<{
   // TODO: replace with real API call
   const product: Product = {
     id: "prd_002",
-    sku: "DOLL-NIKI",
     name: "[NI-KI] Nilili 尼粒粒",
     slug,
     category_id: "cat_doll",
@@ -41,7 +40,6 @@ async function getProductBySlug(slug: string): Promise<{
     {
       id: "var_1",
       product_id: product.id,
-      sku: "DOLL-NIKI-A",
       name: "Full set",
       description: "Bao gồm doll + phụ kiện",
       price: 0,
@@ -54,7 +52,6 @@ async function getProductBySlug(slug: string): Promise<{
     {
       id: "var_2",
       product_id: product.id,
-      sku: "DOLL-NIKI-B",
       name: "Only doll",
       description: "Chỉ doll",
       price: -20000,
@@ -82,7 +79,6 @@ async function getRelatedProductsByCategory(
   const related: Product[] = [
     {
       id: "prd_rel_1",
-      sku: "DOLL-NIKI-DUCK",
       name: "[NI-KI] Nishimura Duck 尼西木鸭",
       slug: "niki-nishimura-duck",
       category_id: categoryId,
@@ -397,7 +393,6 @@ export default async function ProductDetailPage({
               "@context": "https://schema.org",
               "@type": "Product",
               name: product.name,
-              sku: product.sku,
               image: product.images,
               offers: {
                 "@type": "Offer",
