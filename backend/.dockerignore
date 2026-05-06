@@ -1,0 +1,32 @@
+# Dependencies and build output (rebuilt in image)
+node_modules
+dist
+coverage
+build
+
+# Git and IDE
+.git
+.gitignore
+.idea
+.vscode
+*.suo
+.DS_Store
+
+# Logs and env (use runtime env or secrets)
+*.log
+.env
+.env.*
+
+# Tests and tooling (not needed in image)
+**/__tests__
+**/*.test.*
+**/*.spec.*
+.eslint*
+.prettierrc
+*.config.*
+!tsconfig.json
+
+# Docs
+README.md
+*.md
+!prisma/migrations/**/*.md

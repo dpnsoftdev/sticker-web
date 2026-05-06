@@ -1,0 +1,277 @@
+.dango-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.dango-editor {
+  border: 1px solid #d8dee4;
+  border-radius: 8px;
+  background: #fff;
+  color: #1f2328;
+  overflow: hidden;
+  font: 1rem/1.6 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+.dango-editor--skeleton {
+  min-height: 10rem;
+  background: #f4f4f4;
+  animation: dango-pulse 0.8s ease-in-out infinite;
+}
+
+@keyframes dango-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+.dango-editor__content .ProseMirror {
+  min-height: 10rem;
+  max-height: min(70vh, 720px);
+  overflow: auto;
+  padding: 0.75rem 0.9rem 1.1rem;
+  outline: none;
+}
+
+.dango-pm p {
+  margin: 0.4em 0;
+}
+
+.dango-pm p:first-child,
+.dango-pm h1:first-child,
+.dango-pm h2:first-child,
+.dango-pm h3:first-child {
+  margin-top: 0;
+}
+
+.dango-pm h1,
+.dango-pm h2,
+.dango-pm h3 {
+  line-height: 1.2;
+  margin: 0.5em 0 0.35em;
+  font-weight: 700;
+}
+.dango-pm h1 {
+  font-size: 1.5rem;
+}
+.dango-pm h2 {
+  font-size: 1.3rem;
+}
+.dango-pm h3 {
+  font-size: 1.1rem;
+}
+
+.dango-pm a.dango-e-link,
+.dango-pm .dango-e-link {
+  color: #0969da;
+  text-decoration: underline;
+}
+
+/* Ảnh: HTML xuất từ getHTML (chỉ thẻ img + data-align / width) */
+.dango-pm img.dango-e-image,
+.dango-pm .dango-e-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+  display: block;
+  box-sizing: border-box;
+  margin: 0.5em 0;
+}
+.dango-pm img.dango-e-image[data-align="left"] {
+  margin-left: 0;
+  margin-right: auto;
+}
+.dango-pm img.dango-e-image[data-align="right"] {
+  margin-left: auto;
+  margin-right: 0;
+}
+.dango-pm img.dango-e-image[data-align="center"] {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* NodeView ảnh trong editor: khung, kéo góc, căn */
+.dango-pm .dango-image-node {
+  margin: 0.5em 0;
+  line-height: 0;
+}
+.dango-pm .dango-image-node__alignBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+  margin-bottom: 0.3rem;
+  line-height: 1.2;
+  width: 100%;
+}
+.dango-pm .dango-image-node__alignBtn {
+  font: 0.7rem/1.1 system-ui, sans-serif;
+  padding: 0.15rem 0.4rem;
+  border: 1px solid #c8d0d8;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  color: #1f2328;
+}
+.dango-pm .dango-image-node__alignBtn[data-active] {
+  background: #0969da;
+  color: #fff;
+  border-color: #0969da;
+}
+.dango-pm .dango-image-node__inner {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  vertical-align: top;
+  line-height: 0;
+}
+.dango-pm .dango-image-node__img {
+  margin: 0;
+  border-radius: 6px;
+  vertical-align: top;
+}
+.dango-pm .dango-image-node--selected .dango-image-node__img,
+.dango-pm .dango-image-node--resizing .dango-image-node__img {
+  user-select: none;
+}
+.dango-pm .dango-image-node__frame {
+  position: absolute;
+  inset: 0;
+  box-shadow: 0 0 0 2px #0969da;
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 1;
+}
+.dango-pm .dango-image-node__handle {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  width: 12px;
+  height: 12px;
+  z-index: 2;
+  border: 1px solid #0969da;
+  border-radius: 2px;
+  background: #fff;
+  cursor: nwse-resize;
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  line-height: 0;
+  font-size: 0;
+}
+.dango-pm .dango-image-node__handle:hover {
+  background: #ddf4ff;
+}
+
+.dango-pm .dango-e-blockquote,
+.dango-pm blockquote {
+  margin: 0.6em 0;
+  padding-left: 0.8rem;
+  border-left: 3px solid #b8c0cc;
+  color: #464d57;
+}
+
+.dango-pm ul,
+.dango-pm ol {
+  margin: 0.45em 0 0.45em 1.1rem;
+  padding-left: 1rem;
+}
+.dango-pm li p {
+  margin: 0.1em 0;
+}
+
+.dango-pm .dango-e-hashtag,
+.dango-pm span[data-hashtag] {
+  color: #0b6a8c;
+  font-weight: 600;
+}
+
+.dango-pm .is-editor-empty:first-child::before,
+.dango-pm p.is-editor-empty::before,
+.dango-pm .is-empty::before {
+  color: #8c959f;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  color: #8c959f;
+  pointer-events: none;
+}
+
+.dango-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.5rem;
+  align-items: center;
+  padding: 0.4rem 0.5rem;
+  border-bottom: 1px solid #e1e4e8;
+  background: #f8fafb;
+  font-size: 0.8rem;
+}
+
+.dango-tb__group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+  padding-right: 0.4rem;
+  border-right: 1px solid #d8dee4;
+}
+.dango-tb__group:last-of-type {
+  border-right: none;
+}
+
+.dango-tb__btn {
+  min-width: 1.5rem;
+  min-height: 1.5rem;
+  border: 1px solid #cbd2da;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  line-height: 1.1;
+  padding: 0.1rem 0.35rem;
+  font: inherit;
+}
+.dango-tb__btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+.dango-tb__btn[data-active] {
+  background: #0969da;
+  color: #fff;
+  border-color: #0969da;
+}
+
+.dango-toolbar__linkRow {
+  display: flex;
+  flex: 0 0 100%;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.1rem 0.15rem 0.1rem;
+  border-top: 1px dashed #d0d7e0;
+  width: 100%;
+}
+
+.dango-toolbar__linkInput {
+  min-width: 10rem;
+  flex: 1 1 12rem;
+  border: 1px solid #c8d0d8;
+  border-radius: 4px;
+  padding: 0.2rem 0.45rem;
+  font: inherit;
+  background: #fff;
+}

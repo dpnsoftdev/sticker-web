@@ -48,6 +48,8 @@ export type PresignedUploaderProps = {
   previewSize?: number;
   /** Optional ref to the underlying file input (e.g. to reset on dialog close). */
   inputRef?: React.RefObject<HTMLInputElement | null>;
+  /** If set, success toast after each file finishes uploading (e.g. tmp staging hint). */
+  uploadSuccessMessage?: string;
 };
 
 export default function PresignedUploader({
@@ -64,6 +66,7 @@ export default function PresignedUploader({
   buttonLabel = "Upload images",
   previewSize = 88,
   inputRef: externalInputRef,
+  uploadSuccessMessage,
 }: PresignedUploaderProps) {
   const internalInputRef = React.useRef<HTMLInputElement>(null);
   const inputRef = externalInputRef ?? internalInputRef;
@@ -128,6 +131,9 @@ export default function PresignedUploader({
         });
         currentKeys = [...currentKeys, key];
         onChange(currentKeys);
+        if (uploadSuccessMessage) {
+          showToast(uploadSuccessMessage, "success");
+        }
       } catch (e) {
         // Axios errors are already shown by clientAxios interceptor; only toast non-axios errors (e.g. S3 upload failure)
         const isAxiosError = e && typeof e === "object" && "response" in e;

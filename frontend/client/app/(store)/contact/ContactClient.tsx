@@ -31,7 +31,7 @@ export default function ContactClient() {
         <header className="mb-10 text-center">
           <h1 className="text-4xl font-semibold text-foreground">Thông tin</h1>
           <p className="mt-4 text-muted-foreground">
-            Dango Corner luôn sẵn sàng hỗ trợ bạn 🤍
+            Dango&apos;s Corner luôn sẵn sàng hỗ trợ bạn 🤍
           </p>
         </header>
 
@@ -70,9 +70,7 @@ export default function ContactClient() {
                   }}
                   className={cn(
                     "group flex w-full items-center justify-between rounded-xl border border-border px-4 py-4 text-left transition",
-                    "hover:border-primary/40 hover:bg-accent/40",
-                    m.highlight &&
-                      "bg-[#c27a4a]/90 text-white hover:bg-[#c27a4a]"
+                    "hover:border-primary/40 hover:bg-accent/40 cursor-pointer"
                   )}
                 >
                   <span
@@ -147,9 +145,15 @@ export default function ContactClient() {
 
             {/* Optional CTA */}
             <div className="mt-8">
-              <Button variant="outline" className="rounded-xl">
-                Nhắn tin hỗ trợ
-              </Button>
+              <Link
+                href="https://www.facebook.com/share/g/1G6e1XqsyZ/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button variant="outline" className="rounded-xl">
+                  Nhắn tin hỗ trợ
+                </Button>
+              </Link>
             </div>
           </section>
 

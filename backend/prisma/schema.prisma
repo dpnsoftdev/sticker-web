@@ -1,21 +1,257 @@
-// prisma/schema.prisma
-
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "./generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
-/* =========================
-   Enums
-========================= */
+model User {
+  id            String     @id @default(uuid())
+  name          String
+  email         String     @unique
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+  avatar        String?
+  emailVerified Boolean    @default(false) @map("email_verified")
+  lastLoginAt   DateTime?  @map("last_login_at")
+  passwordHash  String     @map("password_hash")
+  phone         String?
+  phoneVerified Boolean    @default(false) @map("phone_verified")
+  role          UserRole   @default(customer)
+  status        UserStatus @default(active)
+  campaigns     Campaign[]
+  orders        Order[]
+
+  @@map("users")
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String
+  slug        String    @unique
+  description String?
+  images      String[]  @default([])
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  products    Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id                  String         @id @default(uuid())
+  name                String
+  slug                String         @unique
+  /// Relational
+  categoryId          String         @map("category_id")
+  productType         ProductType    @default(in_stock) @map("product_type")
+  currency            String         @default("VND")
+  priceNote           String?        @map("price_note")
+  shippingNote        String?        @map("shipping_note")
+  viewCount           Int            @default(0) @map("view_count")
+  sellerName          String         @map("seller_name")
+  sizeDescription     String?        @map("size_description")
+  packageDescription  String?        @map("package_description")
+  preorderDescription String?        @map("preorder_description")
+  /// Product-specific images
+  images              String[]       @default([])
+  createdAt           DateTime       @default(now()) @map("created_at")
+  updatedAt           DateTime       @updatedAt @map("updated_at")
+  description         String?
+  preorderEndsAt      DateTime?      @map("preorder_ends_at")
+  /// Preorder Product Type
+  preorderStartsAt    DateTime?      @map("preorder_starts_at")
+  status              ProductStatus  @default(active)
+  campaignItems       CampaignItem[]
+  orderItems          OrderItem[]
+  category            Category       @relation(fields: [categoryId], references: [id])
+  variants            Variant[]
+
+  @@index([categoryId])
+  @@index([slug])
+  @@map("products")
+}
+
+/// For single-product flow, auto-create one default variant
+model Variant {
+  id                String             @id @default(uuid())
+  productId         String             @map("product_id")
+  name              String
+  description       String?
+  price             Int
+  /// Variant-specific images
+  images            String[]           @default([])
+  createdAt         DateTime           @default(now()) @map("created_at")
+  isDefault         Boolean            @default(false) @map("is_default")
+  sku               String?            @unique
+  status            VariantStatus      @default(active)
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+  stockOnHand       Int                @default(0) @map("stock_on_hand")
+  stockReserved     Int                @default(0) @map("stock_reserved")
+  campaignItems     CampaignItem[]
+  orderItems        OrderItem[]
+  stockReservations StockReservation[]
+  product           Product            @relation(fields: [productId], references: [id])
+
+  @@index([productId])
+  @@map("variants")
+}
+
+model Campaign {
+  id             String         @id @default(uuid())
+  name           String
+  slug           String         @unique
+  description    String?
+  type           CampaignType   @default(preorder)
+  status         CampaignStatus @default(draft)
+  startDate      DateTime       @map("start_date")
+  endDate        DateTime       @map("end_date")
+  createdBy      String         @map("created_by")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+  bannerImage    String?        @map("banner_image")
+  thumbnailImage String?        @map("thumbnail_image")
+  settings       Json?
+  metadata       Json?
+  items          CampaignItem[]
+  creator        User           @relation(fields: [createdBy], references: [id])
+
+  @@map("campaigns")
+}
+
+model CampaignItem {
+  id            String   @id @default(uuid())
+  campaignId    String   @map("campaign_id")
+  productId     String   @map("product_id")
+  variantId     String   @map("variant_id")
+  campaignPrice Int      @map("campaign_price")
+  campaignStock Int      @map("campaign_stock")
+  campaignImage String?  @map("campaign_image")
+  createdAt     DateTime @default(now()) @map("created_at")
+  currency      String   @default("VND")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  stockOnHand   Int      @default(0) @map("stock_on_hand")
+  stockReserved Int      @default(0) @map("stock_reserved")
+  campaign      Campaign @relation(fields: [campaignId], references: [id])
+  product       Product  @relation(fields: [productId], references: [id])
+  variant       Variant  @relation(fields: [variantId], references: [id])
+
+  @@unique([campaignId, variantId])
+  @@index([campaignId])
+  @@index([productId])
+  @@index([variantId])
+  @@map("campaign_items")
+}
+
+model Promotion {
+  id            String           @id @default(cuid())
+  code          String
+  description   String?
+  createdAt     DateTime         @default(now()) @map("created_at")
+  updatedAt     DateTime         @updatedAt @map("updated_at")
+  usedCount     Int              @default(0) @map("used_count")
+  endsAt        DateTime?        @map("ends_at")
+  isActive      Boolean          @default(true) @map("is_active")
+  maxDiscount   Int              @map("max_discount")
+  minOrderValue Int              @map("min_order_value")
+  startsAt      DateTime         @map("starts_at")
+  type          PromotionType
+  usageLimit    Int?             @map("usage_limit")
+  value         Int
+  orders        OrderPromotion[]
+
+  @@index([code])
+  @@map("promotions")
+}
+
+model Order {
+  id                String             @id @default(uuid())
+  userId            String?            @map("user_id")
+  status            OrderStatus        @default(pending_confirmation)
+  createdAt         DateTime           @default(now()) @map("created_at")
+  contact           Json
+  shippingInfo      Json               @map("shipping_info")
+  payment           Json
+  discountAmount    Int                @default(0) @map("discount_amount")
+  finalAmount       Int                @map("final_amount")
+  subtotalAmount    Int                @map("subtotal_amount")
+  currency          String             @default("VND")
+  adminNote         String?            @map("admin_note")
+  user              User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+  items             OrderItem[]
+  promotions        OrderPromotion[]
+  stockReservations StockReservation[]
+
+  @@index([status])
+  @@index([userId])
+  @@map("orders")
+}
+
+model StockReservation {
+  id        String                 @id @default(uuid())
+  orderId   String                 @map("order_id")
+  variantId String                 @map("variant_id")
+  quantity  Int
+  status    StockReservationStatus @default(active)
+  /// * When null, reservation does not auto-expire
+  expiresAt DateTime?               @map("expires_at")
+  createdAt DateTime               @default(now()) @map("created_at")
+  updatedAt DateTime               @updatedAt @map("updated_at")
+  order     Order                  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variant   Variant                @relation(fields: [variantId], references: [id])
+
+  @@index([orderId])
+  @@index([variantId])
+  @@index([status])
+  @@index([expiresAt])
+  @@map("stock_reservations")
+}
+
+model OrderPromotion {
+  id            String        @id @default(cuid())
+  orderId       String        @map("order_id")
+  promotionId   String?       @map("promotion_id")
+  promotionCode String?       @map("promotion_code")
+  discountType  PromotionType @map("discount_type")
+  discountValue Int           @map("discount_value")
+  appliedAmount Int           @map("applied_amount")
+  order         Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  promotion     Promotion?    @relation(fields: [promotionId], references: [id])
+
+  @@index([orderId])
+  @@index([promotionId])
+  @@map("order_promotions")
+}
+
+model OrderItem {
+  id          String   @id @default(uuid())
+  orderId     String   @map("order_id")
+  productId   String   @map("product_id")
+  variantId   String   @map("variant_id")
+  /// Snapshot fields
+  quantity    Int
+  createdAt   DateTime @default(now()) @map("created_at")
+  currency    String   @default("VND")
+  image       String?  @map("image")
+  productName String   @map("product_name")
+  unitPrice   Int      @map("unit_price")
+  variantName String?  @map("variant_name")
+  order       Order    @relation(fields: [orderId], references: [id])
+  product     Product  @relation(fields: [productId], references: [id])
+  variant     Variant  @relation(fields: [variantId], references: [id])
+
+  @@index([orderId])
+  @@index([variantId])
+  @@index([productId])
+  @@map("order_items")
+}
 
 enum UserRole {
   owner
   customer
+  admin
 }
 
 enum UserStatus {
@@ -27,6 +263,18 @@ enum UserStatus {
 enum ProductType {
   in_stock
   preorder
+}
+
+enum ProductStatus {
+  active
+  inactive
+  archived
+}
+
+enum VariantStatus {
+  active
+  inactive
+  archived
 }
 
 enum CampaignType {
@@ -52,259 +300,17 @@ enum OrderStatus {
   payment_confirmed
   shipping
   cancelled
+  delivered
 }
 
-/* =========================
-   Users
-========================= */
-
-model User {
-  id             String     @id @default(uuid())
-  email          String     @unique
-  passwordHash   String     @map("password_hash")
-  name           String
-  phone          String?
-  avatar         String?
-  role           UserRole   @default(customer)
-  status         UserStatus @default(active)
-
-  emailVerified  Boolean    @default(false) @map("email_verified")
-  phoneVerified  Boolean    @default(false) @map("phone_verified")
-
-  createdAt      DateTime   @default(now()) @map("created_at")
-  updatedAt      DateTime   @updatedAt @map("updated_at")
-  lastLoginAt    DateTime?  @map("last_login_at")
-
-  /* relational */ 
-  campaigns      Campaign[]
-  promotions     Promotion[]
-
-  @@map("users")
+enum StockReservationStatus {
+  active
+  confirmed
+  released
+  expired
 }
 
-/* =========================
-   Products
-========================= */
-
-model Category {
-  id          String    @id @default(uuid())
-  name        String
-  slug        String    @unique
-  description String?
-  images      String[]  @default([])
-
-  products    Product[]
-
-  @@map("categories")
-}
-
-model Product {
-  id                  String      @id @default(uuid())
-  name                String
-  slug                String      @unique
-
-  categoryId          String      @map("category_id")
-  category            Category    @relation(fields: [categoryId], references: [id])
-
-  productType         ProductType @default(in_stock) @map("product_type")
-
-  price               Int? 
-  stock               Int?        
-
-  currency            String      @default("VND")
-  priceNote           String?     @map("price_note")
-  shippingNote        String?     @map("shipping_note")
-
-  viewCount           Int         @default(0) @map("view_count")
-
-  sellerName          String      @map("seller_name")
-  sizeDescription     String?     @map("size_description")
-  packageDescription  String?     @map("package_description")
-  preorderDescription String?     @map("preorder_description")
-
-  images              String[]    @default([])
-
-  // Keep flexible for now (matches your JSON preorder object)
-  preorder             Json?
-
-  createdAt           DateTime    @default(now()) @map("created_at")
-  updatedAt           DateTime    @updatedAt @map("updated_at")
-
-  variants            Variant[]
-  campaignItems       CampaignItem[]
-  promotionProducts   PromotionProduct[]
-  orderItems          OrderItem[]
-
-  @@map("products")
-  @@index([categoryId])
-  @@index([slug])
-}
-
-model Variant {
-  id          String   @id @default(uuid())
-
-  productId   String   @map("product_id")
-  product     Product  @relation(fields: [productId], references: [id])
-
-  name        String
-  description String?
-  price       Int?
-  stock       Int?
-  images      String[] @default([])
-
-  campaignItems      CampaignItem[]
-  orderItems         OrderItem[]
-
-  @@map("variants")
-  @@index([productId])
-}
-
-/* =========================
-   Campaigns
-========================= */
-
-model Campaign {
-  id             String         @id @default(uuid())
-  name           String
-  slug           String         @unique
-  description    String?
-
-  type           CampaignType   @default(preorder)
-  status         CampaignStatus @default(draft)
-
-  startDate      DateTime       @map("start_date")
-  endDate        DateTime       @map("end_date")
-
-  createdBy      String         @map("created_by")
-  creator        User           @relation(fields: [createdBy], references: [id])
-
-  createdAt      DateTime       @default(now()) @map("created_at")
-  updatedAt      DateTime       @updatedAt @map("updated_at")
-
-  bannerImage    String?        @map("banner_image")
-  thumbnailImage String?        @map("thumbnail_image")
-
-  // JSON config blocks (match your sample)
-  settings       Json?
-  metadata       Json?
-
-  items          CampaignItem[]
-
-  @@map("campaigns")
-}
-
-model CampaignItem {
-  id            String   @id @default(uuid())
-
-  campaignId    String   @map("campaign_id")
-  campaign      Campaign @relation(fields: [campaignId], references: [id])
-
-  productId     String   @map("product_id")
-  product       Product  @relation(fields: [productId], references: [id])
-
-  variantId     String?  @map("variant_id")
-  variant       Variant? @relation(fields: [variantId], references: [id])
-
-  campaignPrice Int      @map("campaign_price")
-  campaignStock Int      @map("campaign_stock")
-  campaignImage String   @map("campaign_image")
-
-  @@map("campaign_items")
-  @@index([campaignId])
-  @@index([productId])
-  @@unique([campaignId, productId, variantId])
-}
-
-/* =========================
-   Promotions - checked
-========================= */
-
-model Promotion {
-  id          String          @id @default(uuid())
-  code        String          @unique
-  name        String
-  description String?
-
-  status      PromotionStatus @default(active)
-
-  startDate   DateTime        @map("start_date")
-  endDate     DateTime        @map("end_date")
-
-  createdBy   String          @map("created_by")
-  creator     User            @relation(fields: [createdBy], references: [id])
-
-  createdAt   DateTime        @default(now()) @map("created_at")
-  updatedAt   DateTime        @updatedAt @map("updated_at")
-
-  usedCount   Int             @default(0) @map("used_count")
-
-  // Keep these as Json for flexibility (matches your sample)
-  discount     Json
-  usageLimits  Json           @map("usage_limits")
-
-  products     PromotionProduct[]
-  orders       Order[]
-
-  @@map("promotions")
-  @@index([code])
-  @@index([createdBy])
-}
-
-model PromotionProduct {
-  id           String    @id @default(uuid())
-  promotionId  String    @map("promotion_id")
-  promotion    Promotion @relation(fields: [promotionId], references: [id])
-
-  productId    String    @map("product_id")
-  product      Product   @relation(fields: [productId], references: [id])
-
-  @@map("promotion_products")
-  @@index([promotionId])
-  @@index([productId])
-  @@unique([promotionId, productId])
-}
-
-
-/* =========================
-   Orders - checked
-========================= */
-
-model Order {
-  id           String      @id @default(uuid())
-  status       OrderStatus @default(pending_confirmation)
-  createdAt    DateTime    @default(now()) @map("created_at")
-
-  contact      Json
-  shippingInfo Json        @map("shipping_info")
-  payment      Json
-
-  promotionId  String?     @map("promotion_id")
-  promotion    Promotion?  @relation(fields: [promotionId], references: [id])
-
-  // snapshot of what happened at purchase time
-  promotionSnapshot Json?  @map("promotion_snapshot")
-
-  items        OrderItem[]
-
-  @@map("orders")
-  @@index([status])
-}
-
-model OrderItem {
-  id        String   @id @default(uuid())
-
-  orderId   String   @map("order_id")
-  order     Order    @relation(fields: [orderId], references: [id])
-
-  productId String   @map("product_id")
-  product   Product  @relation(fields: [productId], references: [id])
-
-  variantId String?  @map("variant_id")
-  variant   Variant? @relation(fields: [variantId], references: [id])
-
-  quantity  Int
-
-  @@map("order_items")
-  @@index([orderId])
-  @@index([productId])
+enum PromotionType {
+  percentage
+  fixed_amount
 }

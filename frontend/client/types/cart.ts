@@ -8,4 +8,5 @@ export interface CartItem {
   price?: number;
   campaignPrice?: number;
   image?: string;
+  slug?: string;
 }

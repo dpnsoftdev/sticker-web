@@ -1,6 +1,6 @@
 // src/api/variant/variantRepository.ts
-import type { Prisma } from "@prisma/client";
-import { prisma } from "@/common/db/postgres/client";
+import type { Prisma } from "@/common/lib/prisma-client";
+import { prisma } from "@/common/databases/postgres/client";
 import { VariantListQuery } from "./variantModel";
 
 export const variantRepository = {

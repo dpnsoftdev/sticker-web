@@ -1,0 +1,13 @@
+# vào vps -> ssh -i vps.pem $username@public_ip_vps
+# nếu là ssh lần đầu ở local hoặc đổi file pem hãy chạy lệnh config cho local 
+# -> ssh-keygen -R 18.136.242.47
+------------------------------------
+chmod 400 vps.pem
+ssh -i vps.pem ubuntu@18.136.242.47
+------------------------------------
+# check logs khi không ssh được -> ssh -v ubuntu@18.136.242.47
+# tạo file -> nano $name_of_file 
+# xoá file -> rm $name_of_file
+# xoá folder -> rm -r $name_of_folder
+# thao tác file không có quyền -> sudo chmod 755 /etc/caddy/Caddyfile
+# nếu vẫn ko thao tác được chạy -> sudo nano /etc/caddy/Caddyfile thay vì nano /etc/caddy/Caddyfile

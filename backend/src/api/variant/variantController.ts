@@ -24,6 +24,11 @@ export const variantController = {
     handleServiceResponse(response, res);
   },
 
+  removeVariantImage: async (req: Request, res: Response) => {
+    const response = await variantService.removeImage(req.params.id as string, req.body.key as string);
+    handleServiceResponse(response, res);
+  },
+
   deleteVariant: async (req: Request, res: Response) => {
     const response = await variantService.delete(req.params.id as string);
     handleServiceResponse(response, res);

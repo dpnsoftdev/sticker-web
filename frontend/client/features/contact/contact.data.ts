@@ -14,40 +14,33 @@ export const SOCIAL_LINKS: SocialLink[] = [
   {
     id: "facebook",
     label: "Facebook",
-    value: "Facebook: Dango Corner - Muốn Gì Cũm Coá",
-    href: "https://facebook.com", // TODO: thay link thật
+    value: "Facebook: Dango's corner",
+    href: "https://www.facebook.com/lovelydangoxoxo/", // TODO: thay link thật
     Icon: Facebook,
     highlight: true,
   },
   {
     id: "instagram",
     label: "Instagram",
-    value: "Instagram: @dango_corner",
-    href: "https://instagram.com/dango_corner",
+    value: "Instagram: @dangoxoxo",
+    href: "https://www.instagram.com/dangoxoxo",
     Icon: Instagram,
-  },
-  {
-    id: "threads",
-    label: "Threads",
-    value: "Threads: @dango_corner",
-    href: "https://www.threads.net/@dango_corner",
-    Icon: MessageCircle,
   },
   {
     id: "tiktok",
     label: "TikTok",
-    value: "TikTok: @dango_corner",
-    href: "https://www.tiktok.com/@dango_corner",
+    value: "TikTok: @lovelyashley444",
+    href: "https://www.tiktok.com/@lovelyashley444",
     Icon: Music,
   },
 ];
 
 export const TRACKING_GROUP = {
-  title: "Group theo dõi đơn hàng",
+  title: "Group cộng đồng stickers",
   description:
-    "Tham gia group Facebook để cập nhật tiến độ đơn hàng, nhận thông báo mới nhất và kết nối với cộng đồng Dango Corner!",
-  ctaLabel: "Tham gia group theo dõi đơn hàng",
-  href: "https://facebook.com", // TODO: thay link group thật
+    "Tham gia group Facebook để cập nhật hot trends mới nhất về stickers!!",
+  ctaLabel: "Dango's corner - Ở đây chỉ có stickers",
+  href: "https://www.facebook.com/share/g/1G6e1XqsyZ/",
 };
 
 export interface PaymentMethod {
@@ -59,25 +52,24 @@ export interface PaymentMethod {
 
 export const PAYMENT_METHODS: PaymentMethod[] = [
   {
-    id: "vpbank",
-    label: "VPBank",
-    value: "VPBank - STK: 0123456789 - NGUYEN VAN A",
-    highlight: true,
+    id: "tpbank",
+    label: "TPBank",
+    value: "TPBank - STK: 0359 3720 999 - DOAN THI HONG NGUYEN",
   },
   {
     id: "momo",
     label: "Momo",
-    value: "Momo - 0395 939 035 - NGUYEN VAN A",
+    value: "Momo - 0963 137 109 - DOAN THI HONG NGUYEN",
   },
   {
-    id: "zalopay",
-    label: "ZaloPay",
-    value: "ZaloPay - 0395 939 035 - NGUYEN VAN A",
+    id: "paypal",
+    label: "Paypal",
+    value: "Paypal - ztamong@gmail.com",
   },
 ];
 
 export const CONTACT_INFO = {
-  phone: "0395 939 035",
-  email: "dangdangcorner@gmail.com",
+  phone: "0963 137 109",
+  email: "dangoxoxo444@gmail.com",
   address: "TP. Hồ Chí Minh, Việt Nam",
 };

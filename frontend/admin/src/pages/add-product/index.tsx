@@ -10,11 +10,14 @@ import {
   CardContent,
   CircularProgress,
   FormControl,
+  FormControlLabel,
   FormHelperText,
   IconButton,
   InputLabel,
   MenuItem,
   Paper,
+  Radio,
+  RadioGroup,
   Select,
   Stack,
   TextField,
@@ -24,72 +27,25 @@ import {
 } from "@mui/material";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useFieldArray, useForm } from "react-hook-form";
-import { z } from "zod";
 
 import { fetchCategories } from "@apis/category.api";
 import { createProduct } from "@apis/product.api";
 import PresignedUploader from "@components/common/presigned-uploader";
+import { DEFAULT_PREFIX, PRESIGNED_TMP_UPLOAD_SUCCESS } from "@constants";
 import useToastStore, { type ToastState } from "@stores/toastStore";
 import type { Category } from "@types";
 import { slugify } from "@utils";
 
+import {
+  defaultFormValues,
+  ProductFormValues,
+  productSchema,
+} from "./form-schema";
+
 const MAX_PRODUCT_IMAGES = 10;
 const MAX_VARIANT_IMAGES = 5;
 const MAX_FILE_SIZE_MB = 5;
-const MIN_IMAGES_REQUIRED = 2;
-
-const variantSchema = z.object({
-  id: z.string(),
-  name: z.string().trim().min(1, "Variant name is required"),
-  description: z.string().optional().default(""),
-  price: z.coerce.number().int().min(0, "Price must be ≥ 0"),
-  stock: z.coerce.number().int().min(0, "Stock must be a whole number ≥ 0"),
-});
-
-const productSchema = z
-  .object({
-    name: z.string().min(1, "Name is required"),
-    slug: z.string().min(1, "Slug is required"),
-    categoryId: z.string().min(1, "Select a category"),
-    productType: z.enum(["in_stock", "preorder"]),
-    price: z.coerce
-      .number()
-      .int()
-      .min(0, "Price must be ≥ 0")
-      .nullable()
-      .optional(),
-    currency: z.string().default("VND"),
-    priceNote: z.string().optional(),
-    shippingNote: z.string().optional(),
-    stock: z.coerce.number().int().min(0, "Stock must be a whole number ≥ 0"),
-    sellerName: z.string().min(1, "Seller name is required"),
-    sizeDescription: z.string().optional(),
-    packageDescription: z.string().optional(),
-    preorderDescription: z.string().optional(),
-    hasVariants: z.boolean().default(false),
-    variants: z.array(variantSchema).default([]),
-  })
-  .superRefine((val, ctx) => {
-    if (val.hasVariants) {
-      if (val.variants.length === 0) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["variants"],
-          message: "Add at least one variant when using With variants.",
-        });
-      }
-    } else {
-      if (val.variants.length > 0) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["variants"],
-          message: "Remove variants when using Single product.",
-        });
-      }
-    }
-  });
-
-export type ProductFormValues = z.infer<typeof productSchema>;
+const MIN_IMAGES_REQUIRED = 1;
 
 const QUERY_KEY = { categories: ["categories"] as const };
 
@@ -101,24 +57,6 @@ const makeEmptyVariant = () => {
     price: 0,
     stock: 0,
   };
-};
-
-const defaultFormValues: ProductFormValues = {
-  name: "",
-  slug: "",
-  categoryId: "",
-  productType: "in_stock",
-  price: 0,
-  stock: 0,
-  currency: "VND",
-  priceNote: "",
-  shippingNote: "",
-  sellerName: "",
-  sizeDescription: "",
-  packageDescription: "",
-  preorderDescription: "",
-  hasVariants: false,
-  variants: [],
 };
 
 export default function AddProductPage() {
@@ -160,6 +98,9 @@ export default function AddProductPage() {
   const name = watch("name");
   const slug = watch("slug");
   const hasVariants = watch("hasVariants");
+  const defaultVariantIndex = watch("defaultVariantIndex");
+  const productType = watch("productType");
+  const preorderStartDate = watch("preorderStartDate");
 
   React.useEffect(() => {
     if (!slugTouched && name) {
@@ -202,6 +143,7 @@ export default function AddProductPage() {
       // switching to variants => reset product-level price & stock; ensure at least one row
       setValue("price", 0, { shouldValidate: true });
       setValue("stock", 0, { shouldValidate: true });
+      setValue("defaultVariantIndex", 0, { shouldValidate: true });
       if (fields.length === 0) append(makeEmptyVariant());
     }
   };
@@ -213,7 +155,7 @@ export default function AddProductPage() {
       if (!hasVariants) {
         if (imageKeys.length < MIN_IMAGES_REQUIRED) {
           showToast(
-            "Please upload at least 2 product images when not using variants.",
+            "Please upload at least 1 product images when not using variants.",
             "error"
           );
           return;
@@ -225,40 +167,55 @@ export default function AddProductPage() {
         );
         if (missing !== undefined) {
           showToast(
-            "Each variant must have at least 2 images. Please upload images for all variants.",
+            "Each variant must have at least 1 images. Please upload images for all variants.",
             "error"
           );
           return;
         }
       }
 
+      const defaultIdx = hasVariants
+        ? Math.min(values.defaultVariantIndex ?? 0, values.variants.length - 1)
+        : 0;
       const variantsPayload = hasVariants
-        ? values.variants.map(v => ({
+        ? values.variants.map((v, i) => ({
             name: v.name,
             description: v.description || null,
             price: v.price,
             stock: v.stock,
             images: variantImageKeys[v.id] ?? [],
+            isDefault: i === defaultIdx,
           }))
-        : [];
+        : undefined;
+
+      const preorderStartsAt =
+        values.productType === "preorder" && values.preorderStartDate
+          ? `${values.preorderStartDate}T00:00:00.000Z`
+          : null;
+      const preorderEndsAt =
+        values.productType === "preorder" && values.preorderEndDate
+          ? `${values.preorderEndDate}T23:59:59.999Z`
+          : null;
 
       const payload = {
         name: values.name,
         slug: values.slug,
         categoryId: values.categoryId,
         productType: values.productType,
-        price: hasVariants ? null : (values.price ?? 0),
-        stock: hasVariants ? null : values.stock,
         currency: values.currency,
         priceNote: values.priceNote || null,
         shippingNote: values.shippingNote || null,
         sellerName: values.sellerName,
+        description: values.description || null,
         sizeDescription: values.sizeDescription || null,
         packageDescription: values.packageDescription || null,
         preorderDescription: values.preorderDescription || null,
         images: imageKeys,
-        preorder: null,
-        variants: variantsPayload,
+        preorderStartsAt,
+        preorderEndsAt,
+        ...(hasVariants
+          ? { variants: variantsPayload }
+          : { price: values.price ?? 0, stock: values.stock }),
       };
 
       await createMutation.mutateAsync(payload);
@@ -270,8 +227,7 @@ export default function AddProductPage() {
   return (
     <Box>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Fill in the product information below. Images are uploaded via presigned
-        URL.
+        Fill in the product information below to create new product.
       </Typography>
 
       <form onSubmit={onSubmit}>
@@ -342,15 +298,33 @@ export default function AddProductPage() {
                     <Select
                       label="Product type"
                       value={watch("productType")}
-                      onChange={e =>
-                        setValue(
-                          "productType",
-                          e.target.value as "in_stock" | "preorder",
-                          {
+                      onChange={e => {
+                        const next = e.target.value as "in_stock" | "preorder";
+                        setValue("productType", next, { shouldValidate: true });
+                        if (next === "in_stock") {
+                          setValue("preorderStartDate", "", {
                             shouldValidate: true,
-                          }
-                        )
-                      }
+                          });
+                          setValue("preorderEndDate", "", {
+                            shouldValidate: true,
+                          });
+                        } else {
+                          const tomorrow = new Date();
+                          tomorrow.setDate(tomorrow.getDate() + 1);
+                          const dayAfter = new Date(tomorrow);
+                          dayAfter.setDate(dayAfter.getDate() + 1);
+                          setValue(
+                            "preorderStartDate",
+                            tomorrow.toISOString().slice(0, 10),
+                            { shouldValidate: true }
+                          );
+                          setValue(
+                            "preorderEndDate",
+                            dayAfter.toISOString().slice(0, 10),
+                            { shouldValidate: true }
+                          );
+                        }
+                      }}
                     >
                       <MenuItem value="in_stock">In stock</MenuItem>
                       <MenuItem value="preorder">Preorder</MenuItem>
@@ -361,6 +335,82 @@ export default function AddProductPage() {
             </CardContent>
           </Card>
 
+          {/* Pre-order time — only when product type is preorder */}
+          {productType === "preorder" && (
+            <Card variant="outlined" sx={{ borderRadius: 2 }}>
+              <CardContent>
+                <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
+                  Pre-order time
+                </Typography>
+                <Stack
+                  direction={{ xs: "column", sm: "row" }}
+                  spacing={2}
+                  alignItems="flex-start"
+                >
+                  <TextField
+                    label="Start date"
+                    type="date"
+                    value={watch("preorderStartDate")}
+                    onChange={e => {
+                      const v = e.target.value;
+                      setValue("preorderStartDate", v, {
+                        shouldValidate: true,
+                      });
+                      const end = watch("preorderEndDate");
+                      if (end && v) {
+                        const start = new Date(v + "T00:00:00");
+                        const minEnd = new Date(start);
+                        minEnd.setDate(minEnd.getDate() + 1);
+                        const minEndStr = minEnd.toISOString().slice(0, 10);
+                        if (end < minEndStr) {
+                          setValue("preorderEndDate", minEndStr, {
+                            shouldValidate: true,
+                          });
+                        }
+                      }
+                    }}
+                    error={!!errors.preorderStartDate}
+                    helperText={errors.preorderStartDate?.message}
+                    fullWidth
+                    slotProps={{
+                      htmlInput: {
+                        min: new Date().toISOString().slice(0, 10),
+                      },
+                    }}
+                    InputLabelProps={{ shrink: true }}
+                  />
+                  <TextField
+                    label="End date"
+                    type="date"
+                    value={watch("preorderEndDate")}
+                    onChange={e =>
+                      setValue("preorderEndDate", e.target.value, {
+                        shouldValidate: true,
+                      })
+                    }
+                    error={!!errors.preorderEndDate}
+                    helperText={errors.preorderEndDate?.message}
+                    fullWidth
+                    slotProps={{
+                      htmlInput: {
+                        min: preorderStartDate
+                          ? (() => {
+                              const start = new Date(
+                                preorderStartDate + "T00:00:00"
+                              );
+                              start.setDate(start.getDate() + 1);
+                              return start.toISOString().slice(0, 10);
+                            })()
+                          : undefined,
+                      },
+                    }}
+                    InputLabelProps={{ shrink: true }}
+                  />
+                </Stack>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Pricing, stock & variants */}
           <Card variant="outlined" sx={{ borderRadius: 2 }}>
             <CardContent>
@@ -368,8 +418,9 @@ export default function AddProductPage() {
                 Pricing, stock & variants
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Choose a single price/stock for the product, or add variants
-                with their own price and stock.
+                Single product: one price/stock (backend creates a default
+                variant). With variants: add rows with their own price and
+                stock.
               </Typography>
 
               <Stack
@@ -441,6 +492,21 @@ export default function AddProductPage() {
                 sx={{ mt: 1 }}
               />
 
+              <Box sx={{ mt: 3 }}>
+                <PresignedUploader
+                  value={imageKeys}
+                  onChange={setImageKeys}
+                  maxFiles={MAX_PRODUCT_IMAGES}
+                  maxFileSizeMb={MAX_FILE_SIZE_MB}
+                  prefix={DEFAULT_PREFIX}
+                  label="Product images"
+                  helperText={`At least ${MIN_IMAGES_REQUIRED} images (max ${MAX_PRODUCT_IMAGES}, ${MAX_FILE_SIZE_MB}MB each). Files go to temporary storage until you create the product.`}
+                  buttonLabel="Upload images"
+                  previewSize={88}
+                  uploadSuccessMessage={PRESIGNED_TMP_UPLOAD_SUCCESS}
+                />
+              </Box>
+
               {hasVariants && (
                 <Box sx={{ mt: 3 }}>
                   <Typography
@@ -450,14 +516,11 @@ export default function AddProductPage() {
                   >
                     Variant list
                   </Typography>
-
-                  {/* list-level error from superRefine */}
                   {errors.variants?.message && (
                     <FormHelperText error sx={{ mb: 1 }}>
                       {errors.variants?.message}
                     </FormHelperText>
                   )}
-
                   {fields.length === 0 ? (
                     <Button
                       variant="outlined"
@@ -467,121 +530,159 @@ export default function AddProductPage() {
                       Add variant
                     </Button>
                   ) : (
-                    <Stack spacing={2}>
-                      {fields.map((field, index) => {
-                        const rowErr = errors.variants?.[index];
-                        return (
-                          <Paper
-                            key={field._key}
-                            variant="outlined"
-                            sx={{ p: 2, borderRadius: 2 }}
-                          >
-                            <Stack
-                              direction="row"
-                              justifyContent="space-between"
-                              alignItems="center"
-                              sx={{ mb: 1.5 }}
+                    <RadioGroup
+                      value={String(defaultVariantIndex)}
+                      onChange={(_, value) =>
+                        setValue("defaultVariantIndex", Number(value), {
+                          shouldValidate: true,
+                        })
+                      }
+                    >
+                      <Stack spacing={2}>
+                        {fields.map((field, index) => {
+                          const rowErr = errors.variants?.[index];
+                          return (
+                            <Paper
+                              key={field._key}
+                              variant="outlined"
+                              sx={{ p: 2, borderRadius: 2 }}
                             >
-                              <Typography variant="subtitle2">
-                                Variant {index + 1}
-                              </Typography>
-                              <IconButton
-                                size="small"
-                                onClick={() => {
-                                  const id = fields[index].id;
-                                  remove(index);
-                                  setVariantImageKeys(prev => {
-                                    const next = { ...prev };
-                                    delete next[id];
-                                    return next;
-                                  });
-                                }}
+                              <Stack
+                                direction="row"
+                                justifyContent="space-between"
+                                alignItems="center"
+                                sx={{ mb: 1.5 }}
                               >
-                                <RemoveCircleOutlineRoundedIcon />
-                              </IconButton>
-                            </Stack>
-
-                            <Stack
-                              direction={{ xs: "column", sm: "row" }}
-                              spacing={2}
-                            >
-                              <TextField
-                                label="Variant name"
-                                placeholder="e.g. Size M"
-                                size="small"
-                                fullWidth
-                                {...register(`variants.${index}.name` as const)}
-                                error={!!rowErr?.name}
-                                helperText={rowErr?.name?.message}
-                              />
-
-                              <TextField
-                                label="Description"
-                                placeholder="Optional"
-                                size="small"
-                                fullWidth
-                                {...register(
-                                  `variants.${index}.description` as const
-                                )}
-                              />
-
-                              <TextField
-                                label="Price (VND)"
-                                type="number"
-                                size="small"
-                                fullWidth
-                                slotProps={{ htmlInput: { min: 0 } }}
-                                {...register(
-                                  `variants.${index}.price` as const
-                                )}
-                                error={!!rowErr?.price}
-                                helperText={rowErr?.price?.message}
-                              />
-
-                              <TextField
-                                label="Stock"
-                                type="number"
-                                size="small"
-                                fullWidth
-                                slotProps={{ htmlInput: { min: 0 } }}
-                                {...register(
-                                  `variants.${index}.stock` as const
-                                )}
-                                error={!!rowErr?.stock}
-                                helperText={rowErr?.stock?.message}
-                              />
-                            </Stack>
-
-                            <Box sx={{ mt: 2 }}>
-                              <PresignedUploader
-                                value={variantImageKeys[field.id] ?? []}
-                                onChange={keys =>
-                                  setVariantImageKeys(prev => ({
-                                    ...prev,
-                                    [field.id]: keys,
-                                  }))
-                                }
-                                maxFiles={MAX_VARIANT_IMAGES}
-                                maxFileSizeMb={MAX_FILE_SIZE_MB}
-                                label="Variant images"
-                                helperText={`At least ${MIN_IMAGES_REQUIRED} images (max ${MAX_VARIANT_IMAGES}, ${MAX_FILE_SIZE_MB}MB each)`}
-                                buttonLabel="Upload variant images"
-                                previewSize={72}
-                              />
-                            </Box>
-                          </Paper>
-                        );
-                      })}
-
-                      <Button
-                        variant="outlined"
-                        startIcon={<AddRoundedIcon />}
-                        onClick={() => append(makeEmptyVariant())}
-                        disabled={fields.length >= 20}
-                      >
-                        Add another variant
-                      </Button>
-                    </Stack>
+                                <Typography variant="subtitle2">
+                                  Variant {index + 1}
+                                </Typography>
+                                <Stack
+                                  direction="row"
+                                  alignItems="center"
+                                  spacing={2}
+                                >
+                                  <FormControlLabel
+                                    value={String(index)}
+                                    control={<Radio size="small" />}
+                                    label="Main variant"
+                                  />
+                                  <IconButton
+                                    size="small"
+                                    disabled={fields.length === 1}
+                                    onClick={() => {
+                                      const id = fields[index].id;
+                                      const nextIndex = index;
+                                      remove(index);
+                                      if (nextIndex < defaultVariantIndex) {
+                                        setValue(
+                                          "defaultVariantIndex",
+                                          defaultVariantIndex - 1,
+                                          {
+                                            shouldValidate: true,
+                                          }
+                                        );
+                                      } else if (
+                                        nextIndex === defaultVariantIndex &&
+                                        fields.length > 1
+                                      ) {
+                                        setValue("defaultVariantIndex", 0, {
+                                          shouldValidate: true,
+                                        });
+                                      }
+                                      setVariantImageKeys(prev => {
+                                        const next = { ...prev };
+                                        delete next[id];
+                                        return next;
+                                      });
+                                    }}
+                                  >
+                                    <RemoveCircleOutlineRoundedIcon />
+                                  </IconButton>
+                                </Stack>
+                              </Stack>
+                              <Stack
+                                direction={{ xs: "column", sm: "row" }}
+                                spacing={2}
+                              >
+                                <TextField
+                                  label="Variant name"
+                                  placeholder="e.g. Size M"
+                                  size="small"
+                                  fullWidth
+                                  {...register(
+                                    `variants.${index}.name` as const
+                                  )}
+                                  error={!!rowErr?.name}
+                                  helperText={rowErr?.name?.message}
+                                />
+                                <TextField
+                                  label="Description"
+                                  placeholder="Optional"
+                                  size="small"
+                                  fullWidth
+                                  {...register(
+                                    `variants.${index}.description` as const
+                                  )}
+                                />
+                                <TextField
+                                  label="Price (VND)"
+                                  type="number"
+                                  size="small"
+                                  fullWidth
+                                  slotProps={{ htmlInput: { min: 0 } }}
+                                  {...register(
+                                    `variants.${index}.price` as const
+                                  )}
+                                  error={!!rowErr?.price}
+                                  helperText={rowErr?.price?.message}
+                                />
+                                <TextField
+                                  label="Stock"
+                                  type="number"
+                                  size="small"
+                                  fullWidth
+                                  slotProps={{ htmlInput: { min: 0 } }}
+                                  {...register(
+                                    `variants.${index}.stock` as const
+                                  )}
+                                  error={!!rowErr?.stock}
+                                  helperText={rowErr?.stock?.message}
+                                />
+                              </Stack>
+                              <Box sx={{ mt: 2 }}>
+                                <PresignedUploader
+                                  value={variantImageKeys[field.id] ?? []}
+                                  onChange={keys =>
+                                    setVariantImageKeys(prev => ({
+                                      ...prev,
+                                      [field.id]: keys,
+                                    }))
+                                  }
+                                  maxFiles={MAX_VARIANT_IMAGES}
+                                  maxFileSizeMb={MAX_FILE_SIZE_MB}
+                                  prefix={DEFAULT_PREFIX}
+                                  label="Variant images"
+                                  helperText={`At least ${MIN_IMAGES_REQUIRED} images (max ${MAX_VARIANT_IMAGES}, ${MAX_FILE_SIZE_MB}MB each). Files stay in temporary storage until you create the product.`}
+                                  buttonLabel="Upload variant images"
+                                  previewSize={72}
+                                  uploadSuccessMessage={
+                                    PRESIGNED_TMP_UPLOAD_SUCCESS
+                                  }
+                                />
+                              </Box>
+                            </Paper>
+                          );
+                        })}
+                        <Button
+                          variant="outlined"
+                          startIcon={<AddRoundedIcon />}
+                          onClick={() => append(makeEmptyVariant())}
+                          disabled={fields.length >= 20}
+                        >
+                          Add another variant
+                        </Button>
+                      </Stack>
+                    </RadioGroup>
                   )}
                 </Box>
               )}
@@ -601,6 +702,14 @@ export default function AddProductPage() {
                   {...register("sellerName")}
                   error={!!errors.sellerName}
                   helperText={errors.sellerName?.message}
+                  fullWidth
+                />
+                <TextField
+                  label="Description"
+                  placeholder="Product description..."
+                  {...register("description")}
+                  multiline
+                  minRows={2}
                   fullWidth
                 />
                 <TextField
@@ -628,22 +737,6 @@ export default function AddProductPage() {
                   fullWidth
                 />
               </Stack>
-            </CardContent>
-          </Card>
-
-          {/* Product images */}
-          <Card variant="outlined" sx={{ borderRadius: 2 }}>
-            <CardContent>
-              <PresignedUploader
-                value={imageKeys}
-                onChange={setImageKeys}
-                maxFiles={MAX_PRODUCT_IMAGES}
-                maxFileSizeMb={MAX_FILE_SIZE_MB}
-                label="Product images"
-                helperText={`Upload via presigned URL (max ${MAX_PRODUCT_IMAGES} images, ${MAX_FILE_SIZE_MB}MB each)`}
-                buttonLabel="Upload images"
-                previewSize={88}
-              />
             </CardContent>
           </Card>
 

@@ -10,12 +10,12 @@ const DRAWER_WIDTH = 260;
 const DRAWER_COLLAPSED_WIDTH = 76;
 
 function titleFromPath(pathname: string) {
+  if (pathname.startsWith("/dashboard")) return "Summary";
   if (pathname.startsWith("/orders")) return "Order Management";
   if (pathname.startsWith("/customers")) return "Customers";
   if (pathname.startsWith("/coupons")) return "Coupon Code";
   if (pathname.startsWith("/categories")) return "Categories";
   if (pathname.startsWith("/transactions")) return "Transaction";
-  if (pathname.startsWith("/brands")) return "Brand";
   if (pathname.startsWith("/products/new")) return "Add Products";
   if (pathname.startsWith("/products")) return "Product List";
   if (pathname.startsWith("/admins")) return "Manage Admins";

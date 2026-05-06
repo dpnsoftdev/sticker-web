@@ -1,0 +1,101 @@
+name: Deploy (GHCR + Docker Compose + VPS)
+
+on:
+  push:
+    branches: ["main"]
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }} # owner/repo
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Login GHCR để push
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      # Tag following the commit SHA + latest
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,format=short
+            type=raw,value=latest
+
+      # Compute short sha for the image tag
+      - name: Compute short sha
+        id: vars
+        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+
+      - name: Build & Push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          platforms: linux/amd64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Deploy to VPS: write .env, set API_IMAGE, login GHCR, pull, up -d
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            set -e
+
+            APP_DIR=/opt/app
+            mkdir -p $APP_DIR
+            cd $APP_DIR
+
+            # 1) Write runtime .env
+            cat > .env << 'EOF'
+            ${{ secrets.ENV_FILE }}
+            EOF
+            chmod 600 .env
+
+            # 2) Point compose to the exact image tag (sha)
+            API_IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ steps.vars.outputs.SHORT_SHA }}"
+            echo "API_IMAGE=$API_IMAGE" > .env.compose
+            chmod 600 .env.compose
+
+            # 3) Login GHCR on VPS (for pulling images)
+            # GHCR_TOKEN must be a PAT with read:packages; GHCR_USERNAME = GitHub username or org
+            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
+
+            # 4) Pull & restart
+            docker compose --env-file .env --env-file .env.compose pull
+            docker compose --env-file .env --env-file .env.compose up -d --remove-orphans
+
+            # 5) Logout GHCR (for security)
+            docker logout ghcr.io
+
+            # 6) Prune old images (safe, lightweight)
+            docker image prune -f

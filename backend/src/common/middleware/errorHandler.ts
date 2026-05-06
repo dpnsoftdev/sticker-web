@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/common/lib/prisma-client";
 import type { ErrorRequestHandler, RequestHandler } from "express";
 import { StatusCodes, getReasonPhrase } from "http-status-codes";
 

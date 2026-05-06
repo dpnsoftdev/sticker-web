@@ -1,5 +1,12 @@
 // src/api/assets/assetService.ts
-import { CopyObjectCommand, DeleteObjectCommand, HeadObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import {
+  CopyObjectCommand,
+  DeleteObjectCommand,
+  DeleteObjectsCommand,
+  HeadObjectCommand,
+  ListObjectsV2Command,
+  PutObjectCommand,
+} from "@aws-sdk/client-s3";
 import { randomUUID } from "node:crypto";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { StatusCodes } from "http-status-codes";
@@ -9,9 +16,20 @@ import { ServiceResponse } from "@/common/models/serviceResponse";
 import { env } from "@/common/utils/envConfig";
 
 import type { DirectUploadResponse, PresignedUploadBody, PresignedUploadResponse } from "./assetModel";
-import { createS3Client } from "@/common/utils/s3";
+import { createS3Client } from "@/common/lib/s3";
 import { S3_PREFIX_FOLDERS } from "@/common/constants";
 import { AppError } from "@/common/middleware/errorHandler";
+
+/** S3 cleanup: treat as already gone — safe to ignore and continue DB delete. */
+const IGNORABLE_S3_DELETE_ERROR_CODES = new Set(["NoSuchKey", "NotFound"]);
+
+export function isS3MissingObjectBenignError(err: unknown): boolean {
+  if (!err || typeof err !== "object") return false;
+  const e = err as Record<string, unknown>;
+  const name = typeof e.name === "string" ? e.name : "";
+  const code = typeof e.Code === "string" ? e.Code : typeof e.code === "string" ? (e.code as string) : "";
+  return name === "NotFound" || name === "NoSuchKey" || IGNORABLE_S3_DELETE_ERROR_CODES.has(code);
+}
 
 export const assetService = {
   getPresignedUploadUrl: async (
@@ -183,6 +201,113 @@ export const assetService = {
     } catch (error) {
       console.error("Error moving tmp keys:", error);
       throw new AppError("Error moving images");
+    }
+  },
+
+  /**
+   * List all object keys under a prefix (handles pagination).
+   */
+  listObjectsByPrefix: async (prefix: string): Promise<string[]> => {
+    if (!env.S3_BUCKET) {
+      throw new Error("S3 upload is not configured (S3_BUCKET missing)");
+    }
+    const normalizedPrefix = prefix.endsWith("/") ? prefix : `${prefix}/`;
+    const client = createS3Client();
+    const keys: string[] = [];
+    let continuationToken: string | undefined;
+    do {
+      const response = await client.send(
+        new ListObjectsV2Command({
+          Bucket: env.S3_BUCKET,
+          Prefix: normalizedPrefix,
+          ContinuationToken: continuationToken,
+        }),
+      );
+      const contents = response.Contents ?? [];
+      for (const obj of contents) {
+        if (obj.Key) keys.push(obj.Key);
+      }
+      continuationToken = response.IsTruncated ? response.NextContinuationToken : undefined;
+    } while (continuationToken);
+    return keys;
+  },
+
+  /**
+   * Delete a single object from S3 by key.
+   */
+  deleteObject: async (key: string): Promise<void> => {
+    if (!env.S3_BUCKET) {
+      throw new Error("S3 is not configured (S3_BUCKET missing)");
+    }
+    const normalizedKey = key.startsWith("/") ? key.slice(1) : key;
+    const client = createS3Client();
+    await client.send(
+      new DeleteObjectCommand({
+        Bucket: env.S3_BUCKET,
+        Key: normalizedKey,
+      }),
+    );
+  },
+
+  /**
+   * Delete all objects under a prefix (e.g. products/${productId}/).
+   * Uses list then batch delete (S3 DeleteObjects accepts up to 1000 keys per request).
+   */
+  deleteObjectsByPrefix: async (prefix: string): Promise<{ deleted: number }> => {
+    if (!env.S3_BUCKET) {
+      throw new Error("S3 upload is not configured (S3_BUCKET missing)");
+    }
+    const keys = await assetService.listObjectsByPrefix(prefix);
+    if (keys.length === 0) return { deleted: 0 };
+    const client = createS3Client();
+    const BATCH_SIZE = 1000;
+    let deleted = 0;
+    for (let i = 0; i < keys.length; i += BATCH_SIZE) {
+      const batch = keys.slice(i, i + BATCH_SIZE);
+      const output = await client.send(
+        new DeleteObjectsCommand({
+          Bucket: env.S3_BUCKET,
+          Delete: {
+            Objects: batch.map((Key) => ({ Key })),
+            Quiet: true,
+          },
+        }),
+      );
+      deleted += output.Deleted?.length ?? 0;
+      for (const errItem of output.Errors ?? []) {
+        const code = errItem.Code ?? "";
+        if (IGNORABLE_S3_DELETE_ERROR_CODES.has(code)) {
+          console.warn("[S3] Delete skipped — key already missing:", errItem.Key, code);
+          continue;
+        }
+        throw new Error(`S3 DeleteObjects failed for ${errItem.Key}: ${code} ${errItem.Message ?? ""}`);
+      }
+    }
+    return { deleted };
+  },
+
+  /**
+   * Delete a single object from S3 (admin). Key must be under tmp/, products/, or categories/.
+   */
+  adminDeleteObject: async (key: string): Promise<ServiceResponse<null>> => {
+    const n = typeof key === "string" ? (key.startsWith("/") ? key.slice(1) : key) : "";
+    if (!n || n.includes("..")) {
+      return ServiceResponse.failure("Invalid key", null, StatusCodes.BAD_REQUEST);
+    }
+    const allowedPrefixes = [
+      `${S3_PREFIX_FOLDERS.TMP}/`,
+      `${S3_PREFIX_FOLDERS.PRODUCTS}/`,
+      `${S3_PREFIX_FOLDERS.CATEGORIES}/`,
+    ];
+    if (!allowedPrefixes.some((p) => n.startsWith(p))) {
+      return ServiceResponse.failure("Key prefix not allowed", null, StatusCodes.FORBIDDEN);
+    }
+    try {
+      await assetService.deleteObject(key);
+      return ServiceResponse.success("Object deleted", null, StatusCodes.OK);
+    } catch (err) {
+      console.error("adminDeleteObject:", err);
+      return ServiceResponse.failure("Failed to delete object", null, StatusCodes.INTERNAL_SERVER_ERROR);
     }
   },
 };

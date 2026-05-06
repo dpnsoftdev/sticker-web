@@ -43,3 +43,9 @@ export const DirectUploadResponseSchema = z.object({
 });
 
 export type DirectUploadResponse = z.infer<typeof DirectUploadResponseSchema>;
+
+export const DeleteAssetObjectSchema = z.object({
+  body: z.object({
+    key: z.string().min(1, "key is required"),
+  }),
+});

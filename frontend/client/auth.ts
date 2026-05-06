@@ -34,6 +34,8 @@ export const authOptions: NextAuthConfig = {
             email: response.user.email,
             name: response.user.name,
             role: appRole,
+            accessToken: response.accessToken,
+            refreshToken: response.refreshToken,
           };
         } catch (error) {
           console.error("Auth error:", error);
@@ -48,10 +50,29 @@ export const authOptions: NextAuthConfig = {
   },
 
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
         token.role = user.role;
+        token.accessToken = user.accessToken;
+        token.refreshToken = user.refreshToken;
+        token.name = user.name;
+      }
+      if (trigger === "update" && session && typeof session === "object") {
+        const s = session as {
+          user?: { name?: string | null };
+          accessToken?: string;
+          refreshToken?: string;
+        };
+        if (s.user?.name !== undefined) {
+          token.name = s.user.name;
+        }
+        if (typeof s.accessToken === "string") {
+          token.accessToken = s.accessToken;
+        }
+        if (typeof s.refreshToken === "string") {
+          token.refreshToken = s.refreshToken;
+        }
       }
       return token;
     },
@@ -60,7 +81,11 @@ export const authOptions: NextAuthConfig = {
       if (session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as UserRole;
+        session.user.name =
+          (token.name as string | null | undefined) ?? session.user.name ?? null;
       }
+      session.accessToken = token.accessToken as string;
+      session.refreshToken = token.refreshToken as string;
       return session;
     },
   },

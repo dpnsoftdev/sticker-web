@@ -13,7 +13,11 @@ import CategoriesPage from "@pages/categories";
 import ErrorPage from "@pages/error";
 import ForgotPasswordPage from "@pages/forgot-password";
 import LoginPage from "@pages/login";
+import OrderManagementPage from "@pages/order-management";
+import OrderProductsPage from "@pages/order-products";
+import ProductListPage from "@pages/product-list";
 import RegisterPage from "@pages/register";
+import SummaryPage from "@pages/summary";
 import UnauthorizedPage from "@pages/unauthorized";
 import DashboardLayout from "@router/DashboardLayout";
 
@@ -24,9 +28,7 @@ const AppLoader = () => {
   return <></>;
 };
 
-const EmptyPage = () => {
-  return <div>EmptyPage</div>;
-};
+const EmptyPage = () => <div>EmptyPage</div>;
 
 const AppRouter = () => {
   const router = createBrowserRouter([
@@ -74,15 +76,15 @@ const AppRouter = () => {
               index: true,
               element: <Navigate to={ROUTES_APP.DASHBOARD} replace />,
             },
-            { path: ROUTES_APP.DASHBOARD, element: <EmptyPage /> },
-            { path: "/orders", element: <EmptyPage /> },
+            { path: ROUTES_APP.DASHBOARD, element: <SummaryPage /> },
+            { path: "/orders", element: <OrderManagementPage /> },
+            { path: ROUTES_APP.ORDER_PRODUCTS, element: <OrderProductsPage /> },
             { path: "/customers", element: <EmptyPage /> },
             { path: "/coupons", element: <EmptyPage /> },
             { path: ROUTES_APP.CATEGORIES, element: <CategoriesPage /> },
             { path: "/transactions", element: <EmptyPage /> },
-            { path: "/brands", element: <EmptyPage /> },
             { path: "/products/new", element: <AddProductPage /> },
-            { path: "/products", element: <EmptyPage /> },
+            { path: "/products", element: <ProductListPage /> },
             { path: "/admins", element: <EmptyPage /> },
             { path: "/admin-roles", element: <EmptyPage /> },
             {

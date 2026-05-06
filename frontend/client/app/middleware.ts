@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { ROLES } from "@/lib/constants";
+import { ROLES, ROUTES } from "@/lib/constants";
 
 export async function middleware(req: NextRequest) {
   const session = await auth();
@@ -10,32 +10,31 @@ export async function middleware(req: NextRequest) {
   // ---------- PUBLIC ROUTES ----------
   if (
     path === "/" ||
-    path.startsWith("/products") ||
-    path.startsWith("/cart") ||
-    path.startsWith("/checkout") ||
-    path.startsWith("/campaigns") ||
-    path.startsWith("/order/track") ||
-    path.startsWith("/login") ||
-    path.startsWith("/register")
+    path.startsWith(ROUTES.PRODUCT) ||
+    path.startsWith(ROUTES.CART) ||
+    path.startsWith(ROUTES.CHECKOUT) ||
+    path.startsWith(ROUTES.CAMPAIGNS) ||
+    path.startsWith(ROUTES.ORDER_TRACK) ||
+    path.startsWith(ROUTES.LOGIN) ||
+    path.startsWith(ROUTES.REGISTER)
   ) {
     return NextResponse.next();
   }
 
   // ---------- ADMIN ROUTES ----------
-  if (path.startsWith("/admin")) {
+  if (path.startsWith(ROUTES.ADMIN)) {
     if (!session || session.user?.role !== ROLES.ADMIN) {
       return NextResponse.redirect(new URL("/login", req.url));
     }
   }
 
   // ---------- USER ROUTES ----------
-  if (path.startsWith("/user")) {
+  if (path.startsWith(ROUTES.USER)) {
     if (
       !session ||
-      (session.user.role !== ROLES.USER &&
-        session.user.role !== ROLES.ADMIN)
+      (session.user.role !== ROLES.USER && session.user.role !== ROLES.ADMIN)
     ) {
-      return NextResponse.redirect(new URL("/login", req.url));
+      return NextResponse.redirect(new URL(ROUTES.LOGIN, req.url));
     }
   }
 

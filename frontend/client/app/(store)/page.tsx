@@ -1,111 +1,113 @@
 import type { Metadata } from "next";
-import { HOME_CATEGORIES } from "@/features/product/product.mock";
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
+import { fetchHomepage } from "@/features/homepage/homepage.api";
+import type { HomepageCategory } from "@/features/homepage/homepage.types";
+import { ProductCarousel } from "@/components/common/ProductCarousel";
+import { ROUTES } from "@/lib/constants";
 
 export const metadata: Metadata = {
-  title: "Dango's Corner – Order K-pop, Doll & Handmade Merch",
+  title:
+    "Dango's Corner – Stickers, Sticker Book, Văn phòng phẩm & Order nội địa Trung",
   description:
-    "Dango's Corner chuyên nhận order K-pop, doll, merch, sticker handmade từ Taobao, PDD, Douyin, XHS. Nhận pre-order & order theo yêu cầu.",
+    "Dango's Corner chuyên stickers, sticker book, văn phòng phẩm, pre-order và order nội địa Trung từ Taobao, PDD, Douyin, XHS. Nhận pre-order & order theo yêu cầu.",
   keywords: [
-    "order kpop",
-    "preorder doll",
-    "kpop merch",
+    "stickers",
+    "sticker book",
+    "văn phòng phẩm",
+    "pre-order stickers",
     "sticker handmade",
     "order taobao",
     "order pdd",
     "order douyin",
+    "order xiaohongshu",
+    "order xhs",
+    "order nội địa Trung",
   ],
   openGraph: {
-    title: "Dango's Corner – K-pop & Handmade Merch",
+    title:
+      "Dango's Corner – Stickers, Sticker Book, Văn phòng phẩm & Order nội địa Trung",
     description:
-      "Order K-pop, doll, merch, sticker handmade. Nhận pre-order và order theo yêu cầu.",
-    url: "https://dangoscorner.com",
+      "Chuyên stickers, sticker book, văn phòng phẩm, pre-order và order nội địa Trung từ Taobao, PDD, Douyin, XHS. Nhận pre-order & order theo yêu cầu.",
+    url: "https://dango-sticker.vercel.app",
     siteName: "Dango's Corner",
     type: "website",
   },
 };
 
-export default function HomePage() {
+const PLACEHOLDER_IMAGE =
+  "https://d20m1ujgrryo2d.cloudfront.net/placeholder.png";
+
+export default async function HomePage() {
+  let categories: HomepageCategory[];
+  try {
+    categories = await fetchHomepage({
+      next: { revalidate: 60 }, // 1 minute
+    });
+  } catch (error) {
+    console.error("error", error);
+    categories = [];
+  }
+
   return (
     <main className="bg-background">
       {/* HERO / SEARCH */}
-      <section className="container mx-auto px-4 pt-16 pb-12 text-center">
-        <h1 className="text-4xl md:text-5xl font-bold text-foreground">
-          Sản phẩm K-pop, Doll & Handmade Merch
-        </h1>
-
-        <p className="mt-4 max-w-2xl mx-auto text-muted-foreground">
-          Nhận order K-pop, C-pop, Anime, doll, sticker handmade từ Taobao, PDD,
-          Douyin, XHS. Hỗ trợ pre-order và order theo yêu cầu.
-        </p>
+      <section className="container mx-auto text-center p-8">
+        <div className="flex flex-col items-center">
+          <Image
+            src="/dango_icon.png"
+            alt="Dango's Corner"
+            width={240}
+            height={240}
+            className="h-30 w-auto md:h-40"
+          />
+          <h1 className="max-w-full font-bold text-foreground max-md:whitespace-nowrap max-md:text-[clamp(1.15rem,5.2vw,1.9rem)] md:whitespace-normal md:text-4xl">
+            Tại đây chúng tôi có stickers
+          </h1>
+        </div>
 
         {/* Search (indexable placeholder) */}
         <form
-          action="/products"
+          action={ROUTES.PRODUCT}
           className="mt-8 flex justify-center"
           role="search"
         >
           <input
             type="search"
             name="q"
-            placeholder="Tìm kiếm sản phẩm, artist, danh mục..."
-            className="w-full max-w-xl rounded-xl border border-border bg-card px-4 py-3 text-sm"
+            placeholder="Tìm kiếm sản phẩm, phân loại..."
+            className="w-full max-w-xl rounded-xl border border-border bg-card px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </form>
       </section>
-      {HOME_CATEGORIES.map((category) => (
+      {categories.map(category => (
         <section
           key={category.id}
-          className="container mx-auto px-4 py-12"
+          className="container mx-auto p-8"
           aria-labelledby={category.slug}
         >
           <div className="flex items-center justify-between mb-6">
             <h2
               id={category.slug}
-              className="text-2xl font-semibold"
+              className="min-w-0 flex-1 pr-2 font-semibold max-md:text-[clamp(1.05rem,4.4vw,1.5rem)] md:text-2xl"
             >
               {category.name}
             </h2>
 
             <Link
-              href={`/products?category=${category.slug}`}
+              href={`${ROUTES.CATEGORY}/${category.slug}`}
               className="text-sm nav-link"
             >
               Xem thêm →
             </Link>
           </div>
 
-          {/* Slider/Grid */}
-          <div className="flex gap-4 overflow-x-auto">
-            {category.products.map((product) => (
-              <article
-                key={product.id}
-                className="min-w-[180px] rounded-xl bg-card p-3"
-              >
-                <Link href={`/products/${product.slug}`}>
-                  <Image
-                    src={product.images[0]}
-                    alt={product.name}
-                    width={200}
-                    height={200}
-                    className="rounded-lg object-cover"
-                  />
-
-                  <h3 className="mt-2 text-sm font-medium">
-                    {product.name}
-                  </h3>
-
-                  <p className="mt-1 text-sm text-primary">
-                    {product.price.toLocaleString()}đ
-                  </p>
-                </Link>
-              </article>
-            ))}
-          </div>
+          <ProductCarousel
+            products={category.products}
+            placeholderImage={PLACEHOLDER_IMAGE}
+          />
         </section>
       ))}
     </main>
   );
 }
-

@@ -3,7 +3,9 @@
 import type { Product, Variant } from "@/types/product";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, Minus, Plus } from "lucide-react";
+import { toast } from "sonner";
 import { useCartStore } from "@/stores/cart.store";
+import { cartItemIdOf } from "@/lib/utils";
 
 interface AddToCartBarProps {
   product: Product;
@@ -20,7 +22,7 @@ export default function AddToCartBar({
   basePrice,
   onQuantityChange,
 }: AddToCartBarProps) {
-  const { addItem } = useCartStore();
+  const { addItem, items } = useCartStore();
 
   const stock = selectedVariant?.stock ?? product.stock ?? 0;
 
@@ -35,6 +37,29 @@ export default function AddToCartBar({
   };
 
   const handleAddToCart = () => {
+    if (stock <= 0) return;
+
+    const cartItemId = cartItemIdOf(
+      product.id,
+      selectedVariant?.id ?? undefined
+    );
+    const existingQty =
+      items.find(i => i.cartItemId === cartItemId)?.quantity ?? 0;
+    const totalAfterAdd = existingQty + quantity;
+
+    if (totalAfterAdd > stock) {
+      if (existingQty >= stock) {
+        toast.error("Đã đạt số lượng tối đa cho sản phẩm này.", {
+          description: `Tồn kho: ${stock}. Giỏ hàng của bạn đã có ${existingQty} sản phẩm.`,
+        });
+      } else {
+        toast.error("Không đủ hàng để thêm số lượng này.", {
+          description: `Còn ${stock} trong kho, bạn đã có ${existingQty} trong giỏ — tối đa thêm được ${stock - existingQty}.`,
+        });
+      }
+      return;
+    }
+
     const finalPrice = basePrice + (selectedVariant?.price ?? 0);
     addItem({
       productId: product.id,
@@ -46,12 +71,17 @@ export default function AddToCartBar({
       campaignPrice: undefined, // Set if you have campaign pricing logic
       image: getProductImage(product, selectedVariant),
     });
+    toast.success("Đã thêm vào giỏ hàng", {
+      description: product.name,
+    });
   };
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-5">
+    <div>
       <div className="flex items-center justify-between">
-        <div className="text-sm text-muted-foreground">Số lượng</div>
+        <div className="text-sm font-semibold text-foreground mb-3">
+          Số lượng
+        </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground">
             Kho: {stock ?? 0}
@@ -90,7 +120,8 @@ export default function AddToCartBar({
       </div>
 
       <Button
-        className="mt-5 h-12 w-full rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90"
+        variant={"default"}
+        className="mt-5 h-12 w-full rounded-2xl"
         onClick={handleAddToCart}
         disabled={stock <= 0}
       >

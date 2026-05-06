@@ -26,4 +26,9 @@ export const assetController = {
     const response = await assetService.uploadFile(req.file.buffer, req.file.mimetype, prefix);
     handleServiceResponse(response, res);
   },
+
+  deleteObject: async (req: Request, res: Response) => {
+    const response = await assetService.adminDeleteObject(req.body?.key as string);
+    handleServiceResponse(response, res);
+  },
 };

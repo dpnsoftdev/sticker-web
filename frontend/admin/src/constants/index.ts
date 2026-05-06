@@ -10,11 +10,24 @@ export const ROUTES_APP = {
   ACCOUNT: "account",
   DASHBOARD: "/dashboard",
   CATEGORIES: "/categories",
+  /** Demand per product–variant across orders. */
+  ORDER_PRODUCTS: "/order-products",
 };
 
-export const USER_API = {
-  SIGNIN: "/auth/signin",
-  LOGOUT: "/auth/logout",
+export const API_ENDPOINTS = {
+  PRESIGNED_UPLOAD: "/assets/presigned-upload",
+  ASSET_DELETE: "/assets/delete",
+  LOGIN: "/auth/login",
+  REGISTER: "/auth/register",
+  REFRESH: "/auth/refresh",
+  ME: "/auth/me",
+  CATEGORIES: "/categories",
+  CATEGORIES_CREATE: "/categories/create",
+  PRODUCTS: "/products",
+  VARIANTS: "/variants",
+  ORDERS: "/orders",
+  ORDER_PRODUCT_VARIANT_AGGREGATES: "/orders/product-variant-aggregates",
+  DASHBOARD_SUMMARY: "/admin/dashboard/summary",
 };
 
 // Roles id defined in database
@@ -37,6 +50,13 @@ export const DEFAULT_MAX_FILES = 10;
 export const DEFAULT_ACCEPT = "image/jpeg,image/png,image/gif,image/webp";
 export const DEFAULT_PREFIX = "tmp";
 
+/** Toast after each presigned upload to tmp — user must save to move files to the product. */
+export const PRESIGNED_TMP_UPLOAD_SUCCESS =
+  "Uploaded to temporary storage. Save to apply changes.";
+
 export const PRODUCTS_PREFIX = "products";
 export const CATEGORIES_PREFIX = "categories";
 export const MAX_PRODUCT_IMAGES = 10;
+
+export const MAX_VARIANT_IMAGES = 5;
+export const MIN_VARIANT_IMAGES = 1;

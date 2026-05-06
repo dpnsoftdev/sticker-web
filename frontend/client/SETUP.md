@@ -8,7 +8,7 @@ The codebase has been restructured according to the README specifications:
 
 - ✅ `stores/` - Zustand stores (cart, checkout, auth)
 - ✅ `features/` - Business logic modules (auth, product, order, checkout, campaign, promotion)
-- ✅ `hooks/` - Composable hooks (useCart, useCheckout, useAuth, useOrder)
+- ✅ `hooks/` - Composable hooks (useCart, useCheckout, useAuth)
 - ✅ `lib/` - Core utilities (auth, fetcher, constants, utils)
 - ✅ `types/` - TypeScript type definitions
 - ✅ `components/` - UI components (layout components created)
@@ -39,6 +39,7 @@ npm install
 ```
 
 **Note**: If you encounter permission errors, you may need to:
+
 - Run with `sudo` (not recommended)
 - Fix npm permissions
 - Or use `yarn` instead
@@ -54,6 +55,7 @@ NEXTAUTH_SECRET=your-secret-key-here-change-in-production
 ```
 
 Generate a secure secret:
+
 ```bash
 openssl rand -base64 32
 ```
@@ -74,6 +76,7 @@ npx shadcn@latest add select
 ### 4. Connect Backend API
 
 Update API endpoints in:
+
 - `features/auth/auth.service.ts`
 - `features/product/product.api.ts`
 - `features/order/order.api.ts`
@@ -83,6 +86,7 @@ Ensure your backend API matches the expected endpoints.
 ### 5. Implement File Upload Storage
 
 Update `app/api/uploads/route.ts` to integrate with your storage solution:
+
 - AWS S3
 - Cloudflare R2
 - Cloudinary
@@ -91,6 +95,7 @@ Update `app/api/uploads/route.ts` to integrate with your storage solution:
 ### 6. Build UI Components
 
 Create components in `components/`:
+
 - `components/cart/CartItem.tsx`
 - `components/cart/CartSummary.tsx`
 - `components/product/ProductCard.tsx`
@@ -102,6 +107,7 @@ Create components in `components/`:
 ### 7. Add Form Handling
 
 For checkout forms, consider adding:
+
 ```bash
 npm install react-hook-form @hookform/resolvers
 ```
@@ -115,6 +121,7 @@ npm run dev
 ```
 
 Visit:
+
 - `http://localhost:3000` - Homepage
 - `http://localhost:3000/products` - Product list
 - `http://localhost:3000/cart` - Shopping cart
@@ -143,15 +150,18 @@ Visit:
 ## 🐛 Troubleshooting
 
 ### NextAuth Issues
+
 - Ensure `NEXTAUTH_SECRET` is set
 - Check that API routes are accessible
 - Verify credentials provider is working
 
 ### Zustand Persist Issues
+
 - Check browser console for localStorage errors
 - Ensure you're in a browser environment (not SSR)
 
 ### TypeScript Errors
+
 - Run `npm run build` to check for type errors
 - Ensure all imports are correct
 - Check that `types/next-auth.d.ts` is being recognized

@@ -1,3 +1,5 @@
+import { envConfig } from "./envConfig";
+
 export const slugify = (input: string): string => {
   return input
     .toLowerCase()
@@ -55,3 +57,10 @@ export const getS3UploadErrorMessage = (errText: string): string => {
   if (clean.length > 220) clean = clean.slice(0, 219) + "…";
   return `S3 upload failed (${clean}`;
 };
+
+/** CDN URL for display — server stores plain S3 keys only. */
+export function buildImageFullUrl(key: string): string {
+  const base = (envConfig.assetBaseUrl ?? "").replace(/\/+$/, "");
+  const k = key.trim().replace(/^\/+/, "");
+  return `${base}/${k}`;
+}

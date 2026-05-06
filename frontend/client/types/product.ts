@@ -8,6 +8,7 @@ export interface Product {
   product_type: ProductType;
   price: number;
   currency: string;
+  description: string | null;
   price_note: string | null;
   shipping_note: string | null;
   stock: number;
@@ -33,6 +34,7 @@ export interface Variant {
   price: number | null;
   stock: number | null;
   images: string[] | null;
+  is_default?: boolean;
   display_order: number;
   created_at: string;
   updated_at: string;
@@ -47,3 +49,14 @@ export interface Category {
   created_at: string;
   updated_at: string;
 }
+
+/** Product shape from list/detail API */
+export type ProductCardHomepage = {
+  _id: string;
+  thumbnail: string;
+  name: string;
+  slug: string;
+  price: number | null;
+  product_type: ProductType;
+  out_of_stock: boolean;
+};

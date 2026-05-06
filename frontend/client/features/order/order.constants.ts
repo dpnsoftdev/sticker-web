@@ -1,17 +1,17 @@
 import { ORDER_STATUS } from "@/lib/constants";
 
 export const ORDER_STATUS_LABELS: Record<string, string> = {
-  [ORDER_STATUS.PENDING_PAYMENT]: "Pending Payment",
-  [ORDER_STATUS.PROCESSING]: "Processing",
-  [ORDER_STATUS.SHIPPED]: "Shipped",
-  [ORDER_STATUS.DELIVERED]: "Delivered",
-  [ORDER_STATUS.CANCELLED]: "Cancelled",
+  [ORDER_STATUS.PENDING_CONFIRMATION]: "Chờ xác nhận",
+  [ORDER_STATUS.PAYMENT_CONFIRMED]: "Đã xác nhận thanh toán",
+  [ORDER_STATUS.SHIPPING]: "Đang giao",
+  [ORDER_STATUS.DELIVERED]: "Đã giao",
+  [ORDER_STATUS.CANCELLED]: "Đã hủy",
 };
 
 export const ORDER_STATUS_COLORS: Record<string, string> = {
-  [ORDER_STATUS.PENDING_PAYMENT]: "yellow",
-  [ORDER_STATUS.PROCESSING]: "blue",
-  [ORDER_STATUS.SHIPPED]: "purple",
+  [ORDER_STATUS.PENDING_CONFIRMATION]: "yellow",
+  [ORDER_STATUS.PAYMENT_CONFIRMED]: "blue",
+  [ORDER_STATUS.SHIPPING]: "purple",
   [ORDER_STATUS.DELIVERED]: "green",
   [ORDER_STATUS.CANCELLED]: "red",
 };

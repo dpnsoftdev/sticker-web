@@ -1,1 +1,5 @@
-export type NavItem = { label: string; href: string };
+export type NavItem = {
+  label: string;
+  href: string;
+  status: "active" | "disabled";
+};

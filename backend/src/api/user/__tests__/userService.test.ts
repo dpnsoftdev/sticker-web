@@ -13,18 +13,26 @@ describe("userService", () => {
 
   const mockUsers: User[] = [
     {
-      id: 1,
+      id: "00000000-0000-4000-8000-000000000001",
       name: "Alice",
       email: "alice@example.com",
-      age: 42,
+      phone: null,
+      avatar: null,
+      emailVerified: true,
+      phoneVerified: false,
+      role: "customer",
       createdAt: new Date(),
       updatedAt: new Date(),
     },
     {
-      id: 2,
+      id: "00000000-0000-4000-8000-000000000002",
       name: "Bob",
       email: "bob@example.com",
-      age: 21,
+      phone: null,
+      avatar: null,
+      emailVerified: false,
+      phoneVerified: false,
+      role: "customer",
       createdAt: new Date(),
       updatedAt: new Date(),
     },
@@ -82,7 +90,7 @@ describe("userService", () => {
   describe("findById", () => {
     it("returns a user for a valid ID", async () => {
       // Arrange
-      const testId = 1;
+      const testId = "00000000-0000-4000-8000-000000000001";
       const mockUser = mockUsers.find((user) => user.id === testId);
       (userRepositoryInstance.findByIdAsync as Mock).mockReturnValue(mockUser);
 
@@ -98,7 +106,7 @@ describe("userService", () => {
 
     it("handles errors for findByIdAsync", async () => {
       // Arrange
-      const testId = 1;
+      const testId = "00000000-0000-4000-8000-000000000001";
       (userRepositoryInstance.findByIdAsync as Mock).mockRejectedValue(new Error("Database error"));
 
       // Act
@@ -113,7 +121,7 @@ describe("userService", () => {
 
     it("returns a not found error for non-existent ID", async () => {
       // Arrange
-      const testId = 1;
+      const testId = "00000000-0000-4000-8000-000000000099";
       (userRepositoryInstance.findByIdAsync as Mock).mockReturnValue(null);
 
       // Act

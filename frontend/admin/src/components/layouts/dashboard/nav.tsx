@@ -6,11 +6,11 @@ import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
 import CategoryOutlinedIcon from "@mui/icons-material/CategoryOutlined";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
+import ListAltOutlinedIcon from "@mui/icons-material/ListAltOutlined";
 import LocalOfferOutlinedIcon from "@mui/icons-material/LocalOfferOutlined";
 import PeopleOutlineIcon from "@mui/icons-material/PeopleOutline";
 import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
-import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
 
 export type NavItem = {
   label: string;
@@ -33,6 +33,11 @@ export const NAV_SECTIONS: NavSection[] = [
         to: "/orders",
         icon: <ShoppingBagOutlinedIcon />,
       },
+      {
+        label: "Order products",
+        to: "/order-products",
+        icon: <ListAltOutlinedIcon />,
+      },
       { label: "Customers", to: "/customers", icon: <PeopleOutlineIcon /> },
       {
         label: "Coupon Code",
@@ -49,7 +54,6 @@ export const NAV_SECTIONS: NavSection[] = [
         to: "/transactions",
         icon: <ReceiptLongOutlinedIcon />,
       },
-      { label: "Brand", to: "/brands", icon: <StorefrontOutlinedIcon /> },
     ],
   },
   {

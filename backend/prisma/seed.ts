@@ -1,18 +1,26 @@
-import { PrismaClient } from "@prisma/client";
+import "dotenv/config";
 
-const prisma = new PrismaClient();
+import { PrismaClient } from "./generated/prisma/client.js";
+import { PrismaPg } from "@prisma/adapter-pg";
+
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  throw new Error("DATABASE_URL is required");
+}
+
+const adapter = new PrismaPg({ connectionString });
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log("🌱 Seeding user data...");
 
-  // Seed users with upsert to avoid duplicates
   const alice = await prisma.user.upsert({
     where: { email: "alice@example.com" },
     update: {},
     create: {
       name: "Alice",
       email: "alice@example.com",
-      age: 42,
+      passwordHash: "placeholder-hash-replace-in-production",
     },
   });
 
@@ -22,7 +30,7 @@ async function main() {
     create: {
       name: "Robert",
       email: "robert@example.com",
-      age: 21,
+      passwordHash: "placeholder-hash-replace-in-production",
     },
   });
 

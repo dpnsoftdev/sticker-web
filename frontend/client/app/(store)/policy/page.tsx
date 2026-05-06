@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { POLICY_SECTIONS } from "@/features/policy/policy.data";
 
 export const metadata: Metadata = {
-  title: "Chính sách mua hàng – Dango Corner",
+  title: "Chính sách mua hàng – Dango's Corner",
   description:
-    "Tổng hợp các chính sách đặt hàng, thanh toán và vận chuyển khi mua hàng tại Dango Corner.",
+    "Chính sách đặt hàng, thanh toán và vận chuyển khi mua hàng tại Dango's Corner.",
 };
 
 export default function PolicyPage() {
@@ -15,7 +15,7 @@ export default function PolicyPage() {
         <header className="mb-12 text-center">
           <h1 className="text-4xl font-semibold text-foreground">Chính sách</h1>
           <p className="mt-4 text-muted-foreground">
-            Các chính sách quan trọng khi mua hàng tại Dango Corner
+            Các chính sách quan trọng khi mua hàng tại Dango&apos;s Corner
           </p>
         </header>
 

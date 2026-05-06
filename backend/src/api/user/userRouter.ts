@@ -5,6 +5,7 @@ import { z } from "zod";
 import { createApiResponse } from "@/api-docs/openAPIResponseBuilders";
 import { GetUserSchema, UserSchema } from "@/api/user/userModel";
 import { validateRequest } from "@/common/utils/httpHandlers";
+import { adminOnly } from "@/common/middleware/authMiddleware";
 import { userController } from "./userController";
 
 export const userRegistry = new OpenAPIRegistry();
@@ -16,15 +17,19 @@ userRegistry.registerPath({
   method: "get",
   path: "/users",
   tags: ["User"],
+  description: "Get all users",
+  security: [{ bearerAuth: [] }],
   responses: createApiResponse(z.array(UserSchema), "Success"),
 });
 
-userRouter.get("/", userController.getUsers);
+userRouter.get("/", ...adminOnly, userController.getUsers);
 
 userRegistry.registerPath({
   method: "get",
   path: "/users/{id}",
   tags: ["User"],
+  description: "Get a user by ID",
+  security: [{ bearerAuth: [] }],
   request: {
     params: z.object({
       id: z.string().describe("User ID"),
@@ -33,4 +38,4 @@ userRegistry.registerPath({
   responses: createApiResponse(UserSchema, "Success"),
 });
 
-userRouter.get("/:id", validateRequest(GetUserSchema), userController.getUser);
+userRouter.get("/:id", ...adminOnly, validateRequest(GetUserSchema), userController.getUser);

@@ -3,6 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { X, ShoppingCart, Trash2, Minus, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -18,8 +19,8 @@ import {
 
 import { useCartStore } from "@/stores/cart.store";
 import type { CartItem } from "@/types/cart";
-import { formatVND } from "@/stores/cart.store";
-import { cn } from "@/lib/utils";
+import { formatVND, cn } from "@/lib/utils";
+import { PLACEHOLDER_IMAGE, ROUTES } from "@/lib/constants";
 
 export function CartDrawer({
   trigger,
@@ -28,6 +29,7 @@ export function CartDrawer({
   trigger: React.ReactNode;
   onCheckout?: () => void;
 }) {
+  const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const items = useCartStore(s => s.items);
   const itemCount = useCartStore(s => s.getItemCount());
@@ -102,7 +104,7 @@ export function CartDrawer({
                 <div className="text-xl font-semibold text-foreground">
                   Tổng cộng:
                 </div>
-                <div className="text-3xl font-bold text-primary">
+                <div className="text-3xl font-bold text-primary-bold">
                   {formatVND(subtotal)}
                 </div>
               </div>
@@ -110,10 +112,12 @@ export function CartDrawer({
               <Separator className="my-4" />
 
               <Button
-                className="h-14 w-full rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90"
+                variant={"default"}
+                className="h-14 w-full rounded-2xl"
                 onClick={() => {
                   setOpen(false);
                   onCheckout?.();
+                  router.push(ROUTES.CHECKOUT);
                 }}
               >
                 Đặt hàng ngay
@@ -152,14 +156,14 @@ function CartLineItem({
   onRemove: () => void;
   onNavigate: () => void;
 }) {
-  const img = item.image || "/images/placeholder.png";
+  const img = item.image || PLACEHOLDER_IMAGE;
   const price = item.campaignPrice ?? item.price ?? 0;
 
   return (
     <div className="rounded-2xl border border-border bg-card p-3">
       <div className="flex items-start gap-4">
         <Link
-          href={`/products/${item.productId}`}
+          href={`${ROUTES.PRODUCT}/${item.slug}`}
           onClick={onNavigate}
           className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-border"
           aria-label={item.productName ?? "Sản phẩm"}
@@ -186,7 +190,7 @@ function CartLineItem({
                 </p>
               )}
 
-              <p className="mt-2 text-sm font-bold text-primary">
+              <p className="mt-2 text-sm font-bold text-primary-bold">
                 {formatVND(price)}
               </p>
             </div>

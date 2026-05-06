@@ -1,67 +1,30 @@
 "use client";
 
-import { signIn } from "next-auth/react";
-import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+
+import { AuthPanels, AuthSplitShell } from "@/components/common/AuthModal";
+import { ROUTES } from "@/lib/constants";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      await signIn("credentials", {
-        email,
-        password,
-        callbackUrl: "/",
-      });
-    } catch (error) {
-      console.error("Login error:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const router = useRouter();
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-md">
-      <h1 className="text-3xl font-bold mb-6">Login</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label htmlFor="email" className="block mb-2">
-            Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full px-4 py-2 border rounded"
-          />
-        </div>
-        <div>
-          <label htmlFor="password" className="block mb-2">
-            Password
-          </label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="w-full px-4 py-2 border rounded"
-          />
-        </div>
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+    <div className="container flex min-h-[70vh] flex-col items-center justify-center px-4 py-10">
+      <div className="w-full max-w-5xl">
+        <Link
+          href={ROUTES.HOME}
+          className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
         >
-          {loading ? "Logging in..." : "Login"}
-        </button>
-      </form>
+          ← Về trang chủ
+        </Link>
+        <AuthSplitShell className="border border-border shadow-xl">
+          <AuthPanels
+            defaultView="signin"
+            onAuthenticated={() => router.push("/")}
+          />
+        </AuthSplitShell>
+      </div>
     </div>
   );
 }

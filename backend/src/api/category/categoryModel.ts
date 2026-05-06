@@ -10,7 +10,7 @@ export const CategorySchema = z.object({
   name: z.string(),
   slug: z.string(),
   description: z.string().nullable().optional(),
-  image: z.array(z.string()).default([]),
+  images: z.array(z.string()).default([]),
 });
 
 /* =======================
@@ -26,5 +26,23 @@ export const CreateCategorySchema = z.object({
   }),
 });
 
+export const UpdateCategorySchema = z.object({
+  params: z.object({ id: z.string().uuid() }),
+  body: z.object({
+    name: z.string().min(1, "Name is required").optional(),
+    slug: z.string().min(1, "Slug is required").optional(),
+    description: z.string().optional(),
+    images: z.array(z.string()).optional(),
+  }),
+});
+
+export const DeleteCategoryAssetSchema = z.object({
+  params: z.object({ id: z.string().uuid() }),
+  body: z.object({
+    path: z.string().min(1, "Asset path is required"),
+  }),
+});
+
 export type CreateCategoryBody = z.infer<typeof CreateCategorySchema>["body"];
+export type UpdateCategoryBody = z.infer<typeof UpdateCategorySchema>["body"];
 export type Category = z.infer<typeof CategorySchema>;

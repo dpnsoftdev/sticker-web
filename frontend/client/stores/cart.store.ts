@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type { CartItem } from "@/types/cart";
+import { cartItemIdOf, clampQty, getUnitPrice } from "@/lib/utils";
 
 export type AddToCartInput = Omit<CartItem, "cartItemId"> & {
   cartItemId?: string; // allow passing in, but store can compute
@@ -19,19 +20,6 @@ interface CartStore {
   getSubtotal: () => number;
   getItemCount: () => number;
 }
-
-export const cartItemIdOf = (productId: string, variantId?: string) =>
-  `${productId}::${variantId ?? "default"}`;
-
-export const clampQty = (n: number) =>
-  Number.isFinite(n) ? Math.max(1, Math.floor(n)) : 1;
-
-export const getUnitPrice = (item: {
-  campaignPrice?: number;
-  price?: number;
-}) => item.campaignPrice ?? item.price ?? 0;
-
-export const formatVND = (n: number) => `${n.toLocaleString("vi-VN")}đ`;
 
 export const useCartStore = create<CartStore>()(
   persist(

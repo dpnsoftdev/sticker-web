@@ -55,15 +55,15 @@ const config: Config = {
       },
       fontSize: {
         // Standard UI scale (rem-based)
-        xs: ["0.75rem", { lineHeight: "1rem" }],       // 12/16
-        sm: ["0.875rem", { lineHeight: "1.25rem" }],   // 14/20
-        base: ["1rem", { lineHeight: "1.5rem" }],      // 16/24
-        lg: ["1.125rem", { lineHeight: "1.75rem" }],   // 18/28
-        xl: ["1.25rem", { lineHeight: "1.75rem" }],    // 20/28
-        "2xl": ["1.5rem", { lineHeight: "2rem" }],     // 24/32
-        "3xl": ["1.875rem", { lineHeight: "2.25rem" }],// 30/36
-        "4xl": ["2.25rem", { lineHeight: "2.5rem" }],  // 36/40
-        "5xl": ["3rem", { lineHeight: "1" }],          // 48/48
+        xs: ["0.75rem", { lineHeight: "1rem" }], // 12/16
+        sm: ["0.875rem", { lineHeight: "1.25rem" }], // 14/20
+        base: ["1rem", { lineHeight: "1.5rem" }], // 16/24
+        lg: ["1.125rem", { lineHeight: "1.75rem" }], // 18/28
+        xl: ["1.25rem", { lineHeight: "1.75rem" }], // 20/28
+        "2xl": ["1.5rem", { lineHeight: "2rem" }], // 24/32
+        "3xl": ["1.875rem", { lineHeight: "2.25rem" }], // 30/36
+        "4xl": ["2.25rem", { lineHeight: "2.5rem" }], // 36/40
+        "5xl": ["3rem", { lineHeight: "1" }], // 48/48
       },
       borderRadius: {
         lg: "var(--radius)",

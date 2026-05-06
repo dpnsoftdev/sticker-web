@@ -147,8 +147,7 @@ client/
 ├── hooks/                        # STORE WRAPPERS / COMPOSABLE HOOKS
 │   ├── useCart.ts                # wraps cart.store
 │   ├── useCheckout.ts            # wraps checkout.store
-│   ├── useAuth.ts                # sync NextAuth + auth.store
-│   └── useOrder.ts
+│   └── useAuth.ts                # sync NextAuth + auth.store
 │
 ├── lib/                          # CORE UTILITIES
 │   ├── auth.ts                   # requireAuth / requireAdmin
@@ -185,6 +184,7 @@ Handled by **Server Components & Server Actions**:
 - Admin analytics data
 
 ✅ Benefits:
+
 - SEO friendly
 - Automatic caching
 - Smaller JS bundle

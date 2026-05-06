@@ -1,15 +1,18 @@
 import { z } from "zod";
 
 import "@/common/utils/zodExtension";
-import { commonValidations } from "@/common/utils/commonValidation";
 
 export type User = z.infer<typeof UserSchema>;
 export const UserSchema = z
   .object({
-    id: z.number(),
+    id: z.string().uuid(),
     name: z.string(),
     email: z.string().email(),
-    age: z.number(),
+    phone: z.string().nullable(),
+    avatar: z.string().nullable(),
+    emailVerified: z.boolean(),
+    phoneVerified: z.boolean(),
+    role: z.enum(["owner", "customer"]),
     createdAt: z.date(),
     updatedAt: z.date(),
   })
@@ -17,5 +20,5 @@ export const UserSchema = z
 
 // Input Validation for 'GET users/:id' endpoint
 export const GetUserSchema = z.object({
-  params: z.object({ id: commonValidations.id }).strict(),
+  params: z.object({ id: z.string().uuid() }).strict(),
 });

@@ -3,30 +3,33 @@
 /* Design tokens (shadcn-style) */
 :root {
   /* Core surfaces */
-  --background: 48 100% 97%; /* #FFFCF0 */
-  --foreground: 4 14% 54%; /* #9A7B79 */
+  --background: 48 100% 97%; /* #FFFCF0 - Light Yellow */
+  --foreground: 4 14% 54%; /* #9A7B79 - Dark Brown */
 
-  --card: 40 43% 97%; /* #FBF9F5 */
+  --card: 40 43% 97%; /* #FBF9F5 - Light Grey */
   --card-foreground: 4 14% 20%;
 
-  --popover: 40 43% 97%;
+  --popover: 40 43% 97%; /* #FBF9F5 - Light Grey */
   --popover-foreground: 4 14% 20%;
 
   /* Brand */
-  --primary: 340 75% 75%; /* #FAB8CE */
-  --primary-light: 340 87% 90%;
-  --primary-bold: 340 87% 75%;
-  --primary-foreground: 0 0% 100%;
+  /* Primary #FFDEF0 - Light Pink */
+  --primary: 328 100% 94%;
+  --primary-light: 328 100% 97%;
+  --primary-bold: 328 85% 70%;
+  --primary-foreground: 328 25% 22%;
 
-  /* Secondary / Accent */
-  --secondary: 25 70% 95%; /* #FBF0E8 */
-  --secondary-foreground: 4 14% 25%;
+  /* Secondary #FFF8E2 - Light Yellow */
+  --secondary: 46 100% 94%;
+  --secondary-light: 46 100% 97%;
+  --secondary-bold: 46 80% 85%;
+  --secondary-foreground: 46 30% 22%;
 
-  --muted: 351 83% 95%; /* #FDE9EC */
-  --muted-foreground: 4 10% 45%;
-
-  --accent: 351 83% 95%;
-  --accent-foreground: 4 14% 25%;
+  /* Accent #EAFCDA - Light Green */
+  --accent: 92 85% 92%;
+  --accent-light: 92 70% 96%;
+  --accent-bold: 92 70% 82%;
+  --accent-foreground: 92 35% 22%;
 
   /* System */
   --destructive: 0 84% 60%;
@@ -34,7 +37,10 @@
 
   --border: 22 32% 88%; /* #EBDFD8 */
   --input: 22 32% 88%;
-  --ring: 340 87% 85%;
+  --ring: 328 90% 88%;
+
+  --muted: 351 83% 95%; /* #FDE9EC */
+  --muted-foreground: 4 10% 45%;
 
   --radius: 16px;
 
@@ -66,15 +72,25 @@
   --popover-foreground: 0 0% 96%;
 
   --primary: 340 87% 75%;
+  --primary-light: 340 80% 82%;
+  --primary-bold: 340 90% 68%;
   --primary-foreground: 240 10% 10%;
 
-  --secondary: 240 6% 16%;
-  --secondary-foreground: 0 0% 96%;
+  /* --secondary: 240 6% 16%;
+  --secondary-light: 240 6% 20%;
+  --secondary-bold: 240 6% 12%;
+  --secondary-foreground: 0 0% 96%; */
+  --secondary: 46 100% 94%;
+  --secondary-light: 46 100% 97%;
+  --secondary-bold: 46 80% 85%;
+  --secondary-foreground: 46 30% 22%;
 
   --muted: 240 6% 16%;
   --muted-foreground: 240 5% 70%;
 
   --accent: 240 6% 16%;
+  --accent-light: 240 6% 20%;
+  --accent-bold: 240 6% 12%;
   --accent-foreground: 0 0% 96%;
 
   --destructive: 0 72% 56%;
@@ -101,15 +117,21 @@
   --color-popover-foreground: hsl(var(--popover-foreground));
 
   --color-primary: hsl(var(--primary));
+  --color-primary-light: hsl(var(--primary-light));
+  --color-primary-bold: hsl(var(--primary-bold));
   --color-primary-foreground: hsl(var(--primary-foreground));
 
   --color-secondary: hsl(var(--secondary));
+  --color-secondary-light: hsl(var(--secondary-light));
+  --color-secondary-bold: hsl(var(--secondary-bold));
   --color-secondary-foreground: hsl(var(--secondary-foreground));
 
   --color-muted: hsl(var(--muted));
   --color-muted-foreground: hsl(var(--muted-foreground));
 
   --color-accent: hsl(var(--accent));
+  --color-accent-light: hsl(var(--accent-light));
+  --color-accent-bold: hsl(var(--accent-bold));
   --color-accent-foreground: hsl(var(--accent-foreground));
 
   --color-destructive: hsl(var(--destructive));
@@ -154,15 +176,36 @@ body {
 
 @layer utilities {
   @keyframes marquee {
-    0% {
-      transform: translateX(0);
+    from {
+      transform: translate3d(0, 0, 0);
     }
-    100% {
-      transform: translateX(-50%);
+    to {
+      transform: translate3d(-50%, 0, 0);
     }
   }
 
+  /* No permanent will-change: on long/infinite runs it can cause layer churn and occasional jank. */
   .animate-marquee {
-    animation: marquee 24s linear infinite;
+    animation: marquee 60s linear infinite;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
+}
+
+/* Checkbox with white check icon (e.g. checkout agreement) */
+.checkbox-white-check {
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: hsl(var(--border));
+}
+
+.checkbox-white-check:checked {
+  background-color: hsl(var(--primary-bold));
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12l5 5L19 7'/%3E%3C/svg%3E");
+  background-size: 14px 14px;
+  background-position: center;
+}
+
+.checkbox-white-check:hover:not(:checked) {
+  background-color: hsl(var(--primary));
 }

@@ -1,22 +1,53 @@
-import { apiClient, fetcher } from "@/lib/fetcher";
-import { Order, CreateOrderData, CreateOrderResponse } from "./order.types";
+import { apiClient } from "@/lib/fetcher";
+import { API_ENDPOINTS } from "@/lib/constants";
+import type {
+  CreateOrderPayload,
+  CreateOrderResponse,
+  ApiServiceResponse,
+  OrderCreatedData,
+  MyOrdersListResponse,
+  MyOrderDetailResponse,
+} from "./order.types";
 
 export const orderApi = {
-  async createOrder(data: CreateOrderData): Promise<CreateOrderResponse> {
-    const { data: response } = await apiClient.post<CreateOrderResponse>("/api/orders", data);
-    return response;
+  async createOrder(payload: CreateOrderPayload): Promise<CreateOrderResponse> {
+    const { data } = await apiClient.post<ApiServiceResponse<OrderCreatedData>>(
+      API_ENDPOINTS.ORDERS,
+      payload
+    );
+    return data;
   },
 
-  async getOrder(orderId: string): Promise<Order> {
-    return fetcher<Order>(`/api/orders/${orderId}`);
+  async listMine(params?: {
+    status?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<MyOrdersListResponse> {
+    const { data } = await apiClient.get<
+      ApiServiceResponse<{ data: OrderCreatedData[]; total: number }>
+    >(API_ENDPOINTS.ORDERS_ME, {
+      params: {
+        page: params?.page ?? 1,
+        limit: params?.limit ?? 20,
+        ...(params?.status ? { status: params.status } : {}),
+      },
+    });
+    return data;
   },
 
-  async getOrderByCode(orderCode: string, email?: string): Promise<Order> {
-    const params = email ? `?email=${encodeURIComponent(email)}` : "";
-    return fetcher<Order>(`/api/orders/code/${orderCode}${params}`);
+  async getMine(orderId: string): Promise<MyOrderDetailResponse> {
+    const { data } = await apiClient.get<ApiServiceResponse<OrderCreatedData>>(
+      `${API_ENDPOINTS.ORDERS_ME}/${orderId}`
+    );
+    return data;
   },
 
-  async getUserOrders(): Promise<Order[]> {
-    return fetcher<Order[]>("/api/orders");
+  async claimGuestOrders(): Promise<
+    ApiServiceResponse<{ linkedCount: number }>
+  > {
+    const { data } = await apiClient.post<
+      ApiServiceResponse<{ linkedCount: number }>
+    >(`${API_ENDPOINTS.ORDERS_ME}/claim-guest`, {});
+    return data;
   },
 };

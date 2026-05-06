@@ -4,9 +4,15 @@ import multer from "multer";
 import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 
 import { createApiResponse } from "@/api-docs/openAPIResponseBuilders";
+import { adminOnly } from "@/common/middleware/authMiddleware";
 import { validateRequest } from "@/common/utils/httpHandlers";
 
-import { DirectUploadResponseSchema, PresignedUploadRequestSchema, PresignedUploadResponseSchema } from "./assetModel";
+import {
+  DeleteAssetObjectSchema,
+  DirectUploadResponseSchema,
+  PresignedUploadRequestSchema,
+  PresignedUploadResponseSchema,
+} from "./assetModel";
 import { assetController } from "./assetController";
 
 export const assetRegistry = new OpenAPIRegistry();
@@ -24,6 +30,8 @@ assetRegistry.registerPath({
   method: "post",
   path: "/assets/presigned-upload",
   tags: ["Assets"],
+  description: "Get a presigned upload URL for a file",
+  security: [{ bearerAuth: [] }],
   request: {
     body: {
       content: {
@@ -38,6 +46,7 @@ assetRegistry.registerPath({
 
 assetRouter.post(
   "/presigned-upload",
+  ...adminOnly,
   validateRequest(PresignedUploadRequestSchema),
   assetController.getPresignedUploadUrl,
 );
@@ -49,6 +58,8 @@ assetRegistry.registerPath({
   method: "post",
   path: "/assets/upload",
   tags: ["Assets"],
+  description: "Upload a file to S3",
+  security: [{ bearerAuth: [] }],
   request: {
     body: {
       content: {
@@ -76,4 +87,27 @@ assetRegistry.registerPath({
   responses: createApiResponse(DirectUploadResponseSchema, "File uploaded to S3", 201),
 });
 
-assetRouter.post("/upload", upload.single("file"), assetController.uploadFile);
+assetRouter.post("/upload", ...adminOnly, upload.single("file"), assetController.uploadFile);
+
+/* =======================
+  POST /assets/delete
+======================= */
+assetRegistry.registerPath({
+  method: "post",
+  path: "/assets/delete",
+  tags: ["Assets"],
+  description: "Delete an object from S3 by key (allowed prefixes: tmp/, products/, categories/)",
+  security: [{ bearerAuth: [] }],
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: DeleteAssetObjectSchema.shape.body,
+        },
+      },
+    },
+  },
+  responses: createApiResponse(null, "Object deleted"),
+});
+
+assetRouter.post("/delete", ...adminOnly, validateRequest(DeleteAssetObjectSchema), assetController.deleteObject);
